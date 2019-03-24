@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -9,6 +10,7 @@ using OpenTK.Graphics.OpenGL4;
 
 namespace OpenTK_Test
 {
+
 	[StructLayout(LayoutKind.Sequential, Pack = 1)]
 	struct Vertex
 	{
@@ -29,6 +31,16 @@ namespace OpenTK_Test
 
 	class Mesh
 	{
+		[Conditional("DEBUG")]
+		[DebuggerStepThrough]
+		public static void CheckLastError()
+		{
+			ErrorCode errorCode = GL.GetError();
+			if (errorCode != ErrorCode.NoError)
+			{
+				throw new Exception(errorCode.ToString());
+			}
+		}
 		public Vertex[] vertices;
 		public uint[] indices;
 		public TextureInfo[] textures;
@@ -44,14 +56,16 @@ namespace OpenTK_Test
 
 		public void Draw(Shader shader)
 		{
+			shader.Use();
 			uint diffuseNr = 1;
 			uint specularNr = 1;
 			uint normalNr = 1;
 			uint heightNr = 1;
 			for (int i = 0; i < textures.Length; i++)
 			{
-				GL.ActiveTexture((TextureUnit)i); // active proper texture unit before binding
+				GL.ActiveTexture(TextureUnit.Texture0 + i); // active proper texture unit before binding
 												  // retrieve texture number (the N in diffuse_textureN)
+				CheckLastError();
 				string number = "";
 				string name = textures[i].type;
 				if (name == "texture_diffuse")
@@ -65,16 +79,22 @@ namespace OpenTK_Test
 
 				// now set the sampler to the correct texture unit
 				GL.Uniform1(GL.GetUniformLocation(shader.Handle, (name + number)), i);
+				CheckLastError();
 				// and finally bind the texture
 				GL.BindTexture(TextureTarget.Texture2D, textures[i].id);
+				CheckLastError();
 			}
 
 			GL.ActiveTexture(TextureUnit.Texture0);
+			CheckLastError();
 
 			// draw mesh
 			GL.BindVertexArray(vao);
+			CheckLastError();
 			GL.DrawElements(BeginMode.Triangles, indices.Length, DrawElementsType.UnsignedInt, 0);
+			CheckLastError();
 			GL.BindVertexArray(0);
+			CheckLastError();
 		}
 
 
@@ -101,16 +121,16 @@ namespace OpenTK_Test
 				GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, sizeof(Vertex), 0);
 				// vertex normals
 				GL.EnableVertexAttribArray(1);
-				GL.VertexAttribPointer(1, 3, VertexAttribPointerType.Float, false, sizeof(Vertex), (int)Marshal.OffsetOf<Vertex>("Normal"));
+				GL.VertexAttribPointer(1, 3, VertexAttribPointerType.Float, false, sizeof(Vertex), 12);
 				// vertex texture coords
 				GL.EnableVertexAttribArray(2);
-				GL.VertexAttribPointer(2, 2, VertexAttribPointerType.Float, false, sizeof(Vertex), (int)Marshal.OffsetOf<Vertex>("TexCoords"));
+				GL.VertexAttribPointer(2, 2, VertexAttribPointerType.Float, false, sizeof(Vertex), 24);
 				// vertex tangent
 				GL.EnableVertexAttribArray(3);
-				GL.VertexAttribPointer(3, 3, VertexAttribPointerType.Float, false, sizeof(Vertex), (int)Marshal.OffsetOf<Vertex>("Tangent"));
+				GL.VertexAttribPointer(3, 3, VertexAttribPointerType.Float, false, sizeof(Vertex), 32);
 				// vertex bitangent
 				GL.EnableVertexAttribArray(4);
-				GL.VertexAttribPointer(4, 3, VertexAttribPointerType.Float, false, sizeof(Vertex), (int)Marshal.OffsetOf<Vertex>("Bitangent"));
+				GL.VertexAttribPointer(4, 3, VertexAttribPointerType.Float, false, sizeof(Vertex), 44);
 
 				GL.BindVertexArray(0);
 			}

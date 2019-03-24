@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -15,6 +16,17 @@ namespace OpenTK_Test
 {
 	class Model
 	{
+		[Conditional("DEBUG")]
+		[DebuggerStepThrough]
+		public static void CheckLastError()
+		{
+			ErrorCode errorCode = GL.GetError();
+			if (errorCode != ErrorCode.NoError)
+			{
+				throw new Exception(errorCode.ToString());
+			}
+		}
+
 		public List<TextureInfo> texturesLoaded = new List<TextureInfo>();
 		private List<Mesh> meshes = new List<Mesh>();
 		private string directory;
@@ -77,6 +89,7 @@ namespace OpenTK_Test
 				vector.Z = mesh.Vertices[i].Z;
 				vertex.Position = vector;
 
+
 				vector.X = mesh.Normals[i].X;
 				vector.Y = mesh.Normals[i].Y;
 				vector.Z = mesh.Normals[i].Z;
@@ -103,6 +116,7 @@ namespace OpenTK_Test
 				vector.Y = mesh.BiTangents[i].Y;
 				vector.Z = mesh.Tangents[i].Z;
 				vertex.Bitangent = vector;
+
 				vertices.Add(vertex);
 			}
 
@@ -111,7 +125,10 @@ namespace OpenTK_Test
 				Face face = mesh.Faces[i];
 				// retrieve all indices of the face and store them in the indices vector
 				for (int j = 0; j < face.IndexCount; j++)
+				{
 					indices.Add((uint)face.Indices[j]);
+					//Console.WriteLine(face.Indices[j]);
+				}
 			}
 			Material material = scene.Materials[mesh.MaterialIndex];
 
@@ -163,10 +180,15 @@ namespace OpenTK_Test
 
 		private uint TextureFromFile(string path, string directory)
 		{
+			//Console.WriteLine(path + "\n\n\n" + directory);
+			//Console.ReadKey();
+			CheckLastError();
+			CheckLastError();
 			uint textureID;
 			GL.GenTextures(1, out textureID);
+			CheckLastError();
 
-			Image<Rgba32> image = Image.Load(path);
+			Image<Rgba32> image = Image.Load(System.IO.Path.Combine(directory, path));
 			Rgba32[] tempPixels = image.GetPixelSpan().ToArray();
 			List<byte> pixels = new List<byte>();
 			foreach (Rgba32 p in tempPixels)
@@ -180,16 +202,26 @@ namespace OpenTK_Test
 			//Now, set the wrapping mode. S is for the X axis, and T is for the Y axis.
 			//We set this to Repeat so that textures will repeat when wrapped. Not demonstrated here since the texture coordinates exactly match
 			GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)OpenTK.Graphics.OpenGL4.TextureWrapMode.Repeat);
+			CheckLastError();
 			GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)OpenTK.Graphics.OpenGL4.TextureWrapMode.Repeat);
+			CheckLastError();
 
 			GL.BindTexture(TextureTarget.Texture2D, textureID);
+			CheckLastError();
 			GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, image.Width, image.Height, 0, PixelFormat.Rgba, PixelType.UnsignedByte, pixels.ToArray());
+			CheckLastError();
 			GL.GenerateMipmap(GenerateMipmapTarget.Texture2D);
+			CheckLastError();
 
 			GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)OpenTK.Graphics.OpenGL4.TextureWrapMode.Repeat);
+			CheckLastError();
 			GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)OpenTK.Graphics.OpenGL4.TextureWrapMode.Repeat);
+			CheckLastError();
 			GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.LinearMipmapLinear);
+			CheckLastError();
 			GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear);
+			CheckLastError();
+			Console.WriteLine(textureID);
 
 			return textureID;
 		}

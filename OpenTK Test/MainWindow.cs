@@ -4,11 +4,13 @@ using OpenTK.Graphics.OpenGL4;
 using OpenTK.Graphics;
 using OpenTK.Input;
 using System.Drawing;
+using System.Diagnostics;
+
 namespace OpenTK_Test
 {
 	public sealed class MainWindow : GameWindow
 	{
-		Model model = new Model("C:/Users/User/source/repos/OpenTK Test/OpenTK Test/bin/Debug/resources/nanosuit.obj");
+		Model model;
 		Vector2 lastMousePos = new Vector2();
 
 		Camera cam;
@@ -17,21 +19,35 @@ namespace OpenTK_Test
 		
 		public MainWindow(int width, int height, string title) : base(width, height, GraphicsMode.Default, title) { }
 
+		[Conditional("DEBUG")]
+		[DebuggerStepThrough]
+		public static void CheckLastError()
+		{
+			ErrorCode errorCode = GL.GetError();
+			if (errorCode != ErrorCode.NoError)
+			{
+				throw new Exception(errorCode.ToString());
+			}
+		}
 
 		protected override void OnResize(EventArgs e)
 		{
 			GL.Viewport(0, 0, Width, Height);
+			CheckLastError();
 			base.OnResize(e);
 		}
 		protected override void OnLoad(EventArgs e)
 		{
+			model = new Model("C:/Users/User/source/repos/OpenTK Test/OpenTK Test/bin/Debug/resources/nanosuit.obj");
 			cam = new Camera(this);
 			lastMousePos = new Vector2(Mouse.GetState().X, Mouse.GetState().Y);
 			CursorVisible = false;
 
+			GL.Enable(EnableCap.DepthTest);
+			CheckLastError();
 			GL.ClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+			CheckLastError();
 			shader = new Shader("../../shader.vert", "../../shader.frag");
-			
 			base.OnLoad(e);
 		}
 
@@ -41,9 +57,12 @@ namespace OpenTK_Test
 			shader.Use();
 			ViewProjectionMatrix = cam.GetViewMatrix() * cam.ProjectionMatrix;
 			shader.SetMatrix4("mvp", ViewProjectionMatrix);
-			GL.Clear(ClearBufferMask.ColorBufferBit);
+			CheckLastError();
+			GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
+			CheckLastError();
 			model.Draw(shader);
 			Context.SwapBuffers();
+			
 			base.OnRenderFrame(e);
 		}
 

@@ -11,5 +11,5 @@ uniform mat4 mvp;
 void main()
 {
     TexCoords = aTexCoords;    
-    gl_Position = mvp * vec4(aPos, 1.0);
+    gl_Position = vec4(aPos, 1.0) * mvp;
 }

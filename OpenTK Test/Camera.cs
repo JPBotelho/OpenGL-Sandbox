@@ -15,7 +15,7 @@ namespace OpenTK_Test
 		public const float zNear = .1f;
 		public const float zFar = 40f;
 
-		public Vector3 Position = new Vector3(0, 0, 3);
+		public Vector3 Position = new Vector3(0, 0, 30);
 		public Vector3 Orientation = new Vector3((float)Math.PI, 0f, 0f);
 		public float MoveSpeed = 0.2f;
 		public float MouseSensitivity = 0.0025f;
