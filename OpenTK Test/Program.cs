@@ -6,10 +6,11 @@ using System.Threading.Tasks;
 
 namespace OpenTK_Test
 {
-	class Program
+	static class Program
 	{
-		static void Main(string[] args)
+		static void Main()
 		{
+			new MainWindow(800, 600, "Test OpenTK").Run(60.0);
 		}
 	}
 }
