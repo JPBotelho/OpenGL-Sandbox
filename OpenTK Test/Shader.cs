@@ -64,7 +64,15 @@ namespace OpenTK_Test
 
 		public void SetInt(string name, int value)
 		{
+			GL.UseProgram(Handle);
 			GL.Uniform1(GL.GetUniformLocation(Handle, name), value);
+		}
+
+		public void SetMatrix4(string name, Matrix4 data)
+		{
+			GL.UseProgram(Handle);
+			var location = GL.GetUniformLocation(Handle, name);
+			GL.UniformMatrix4(location, true, ref data);
 		}
 
 		public int GetAttribLocation(string attribName)

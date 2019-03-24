@@ -8,6 +8,10 @@ namespace OpenTK_Test
 {
 	public sealed class MainWindow : GameWindow
 	{
+		Vector2 lastMousePos = new Vector2();
+
+		Camera cam;
+		Matrix4 ViewProjectionMatrix;
 		Shader shader;
 		Texture texture, texture1;
 		private int vbo, ebo, vao;
@@ -33,6 +37,10 @@ namespace OpenTK_Test
 		}
 		protected override void OnLoad(EventArgs e)
 		{
+			cam = new Camera(this);
+			lastMousePos = new Vector2(Mouse.GetState().X, Mouse.GetState().Y);
+			CursorVisible = false;
+
 			GL.ClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 
 			vbo = GL.GenBuffer();
@@ -84,16 +92,24 @@ namespace OpenTK_Test
 
 		protected override void OnRenderFrame(FrameEventArgs e)
 		{
+			Title = $"(Vsync: {VSync}) FPS: {1f / e.Time:0}";
+			ViewProjectionMatrix = cam.GetViewMatrix() * cam.ProjectionMatrix;
+			shader.SetMatrix4("mvp", ViewProjectionMatrix);
 			GL.Clear(ClearBufferMask.ColorBufferBit);
 			GL.BindVertexArray(vao);
 
 			texture.Use(TextureUnit.Texture0);
 			texture1.Use(TextureUnit.Texture1);
-			shader.Use();
 
 			GL.DrawElements(PrimitiveType.Triangles, indices.Length, DrawElementsType.UnsignedInt, 0);
 			Context.SwapBuffers();
 			base.OnRenderFrame(e);
+		}
+
+		protected override void OnUpdateFrame(FrameEventArgs e)
+		{
+			HandleKeyboard();
+			base.OnUpdateFrame(e);
 		}
 
 		private void HandleKeyboard()
@@ -104,6 +120,52 @@ namespace OpenTK_Test
 			{
 				Exit();
 			}
+			if (Keyboard.GetState().IsKeyDown(Key.W))
+			{
+				Console.WriteLine("test");
+				cam.Move(0f, 0.1f, 0f);
+			}
+
+			if (Keyboard.GetState().IsKeyDown(Key.S))
+			{
+				cam.Move(0f, -0.1f, 0f);
+			}
+
+			if (Keyboard.GetState().IsKeyDown(Key.A))
+			{
+				cam.Move(-0.1f, 0f, 0f);
+			}
+
+			if (Keyboard.GetState().IsKeyDown(Key.D))
+			{
+				cam.Move(0.1f, 0f, 0f);
+			}
+
+			if (Keyboard.GetState().IsKeyDown(Key.Q))
+			{
+				cam.Move(0f, 0f, 0.1f);
+			}
+
+			if (Keyboard.GetState().IsKeyDown(Key.E))
+			{
+				cam.Move(0f, 0f, -0.1f);
+			}
+
+			if (Focused)
+			{
+				Vector2 delta = lastMousePos - new Vector2(OpenTK.Input.Mouse.GetState().X, OpenTK.Input.Mouse.GetState().Y);
+				lastMousePos += delta;
+
+				cam.AddRotation(delta.X, delta.Y);
+				lastMousePos = new Vector2(OpenTK.Input.Mouse.GetState().X, OpenTK.Input.Mouse.GetState().Y);
+			}
+
+		}
+
+		protected override void OnFocusedChanged(EventArgs e)
+		{
+			base.OnFocusedChanged(e);
+			lastMousePos = new Vector2(Mouse.GetState().X, Mouse.GetState().Y);
 		}
 
 		protected override void OnUnload(EventArgs e)
