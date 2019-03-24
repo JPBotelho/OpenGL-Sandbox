@@ -12,7 +12,7 @@ namespace OpenTK_Test
 	class Camera
 	{
 		public const float fovy = 1.3f;
-		public const float zNear = 1f;
+		public const float zNear = .1f;
 		public const float zFar = 40f;
 
 		public Vector3 Position = new Vector3(0, 0, 3);
