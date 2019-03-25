@@ -65,7 +65,6 @@ namespace OpenTK_Test
 			{
 				GL.ActiveTexture(TextureUnit.Texture0 + i); // active proper texture unit before binding
 												  // retrieve texture number (the N in diffuse_textureN)
-				CheckLastError();
 				string number = "";
 				string name = textures[i].type;
 				if (name == "texture_diffuse")
@@ -79,22 +78,16 @@ namespace OpenTK_Test
 
 				// now set the sampler to the correct texture unit
 				GL.Uniform1(GL.GetUniformLocation(shader.Handle, (name + number)), i);
-				CheckLastError();
 				// and finally bind the texture
 				GL.BindTexture(TextureTarget.Texture2D, textures[i].id);
-				CheckLastError();
 			}
 
 			GL.ActiveTexture(TextureUnit.Texture0);
-			CheckLastError();
 
 			// draw mesh
 			GL.BindVertexArray(vao);
-			CheckLastError();
 			GL.DrawElements(BeginMode.Triangles, indices.Length, DrawElementsType.UnsignedInt, 0);
-			CheckLastError();
 			GL.BindVertexArray(0);
-			CheckLastError();
 		}
 
 

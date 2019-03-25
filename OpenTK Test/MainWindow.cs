@@ -33,7 +33,6 @@ namespace OpenTK_Test
 		protected override void OnResize(EventArgs e)
 		{
 			GL.Viewport(0, 0, Width, Height);
-			CheckLastError();
 			base.OnResize(e);
 		}
 		protected override void OnLoad(EventArgs e)
@@ -44,9 +43,7 @@ namespace OpenTK_Test
 			CursorVisible = false;
 
 			GL.Enable(EnableCap.DepthTest);
-			CheckLastError();
 			GL.ClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-			CheckLastError();
 			shader = new Shader("../../shader.vert", "../../shader.frag");
 			base.OnLoad(e);
 		}
@@ -57,9 +54,7 @@ namespace OpenTK_Test
 			shader.Use();
 			ViewProjectionMatrix = cam.GetViewMatrix() * cam.ProjectionMatrix;
 			shader.SetMatrix4("mvp", ViewProjectionMatrix);
-			CheckLastError();
 			GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
-			CheckLastError();
 			model.Draw(shader);
 			Context.SwapBuffers();
 			

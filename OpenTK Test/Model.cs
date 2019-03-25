@@ -99,7 +99,7 @@ namespace OpenTK_Test
 				{
 					Vector2 vec;
 					vec.X = mesh.TextureCoordinateChannels[0][i].X;
-					vec.Y = mesh.TextureCoordinateChannels[0][i].X;
+					vec.Y = mesh.TextureCoordinateChannels[0][i].Y;
 					vertex.TexCoords = vec;
 				}
 				else
@@ -182,11 +182,8 @@ namespace OpenTK_Test
 		{
 			//Console.WriteLine(path + "\n\n\n" + directory);
 			//Console.ReadKey();
-			CheckLastError();
-			CheckLastError();
 			uint textureID;
 			GL.GenTextures(1, out textureID);
-			CheckLastError();
 
 			Image<Rgba32> image = Image.Load(System.IO.Path.Combine(directory, path));
 			Rgba32[] tempPixels = image.GetPixelSpan().ToArray();
@@ -202,26 +199,16 @@ namespace OpenTK_Test
 			//Now, set the wrapping mode. S is for the X axis, and T is for the Y axis.
 			//We set this to Repeat so that textures will repeat when wrapped. Not demonstrated here since the texture coordinates exactly match
 			GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)OpenTK.Graphics.OpenGL4.TextureWrapMode.Repeat);
-			CheckLastError();
 			GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)OpenTK.Graphics.OpenGL4.TextureWrapMode.Repeat);
-			CheckLastError();
 
 			GL.BindTexture(TextureTarget.Texture2D, textureID);
-			CheckLastError();
 			GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, image.Width, image.Height, 0, PixelFormat.Rgba, PixelType.UnsignedByte, pixels.ToArray());
-			CheckLastError();
 			GL.GenerateMipmap(GenerateMipmapTarget.Texture2D);
-			CheckLastError();
 
 			GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)OpenTK.Graphics.OpenGL4.TextureWrapMode.Repeat);
-			CheckLastError();
 			GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)OpenTK.Graphics.OpenGL4.TextureWrapMode.Repeat);
-			CheckLastError();
 			GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.LinearMipmapLinear);
-			CheckLastError();
 			GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear);
-			CheckLastError();
-			Console.WriteLine(textureID);
 
 			return textureID;
 		}
