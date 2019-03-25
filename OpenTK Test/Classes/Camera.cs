@@ -11,7 +11,7 @@ namespace OpenTK_Test
 	
 	class Camera
 	{
-		public const float fovy = 2f;
+		public float fovy = 1.5f;
 		public const float zNear = .1f;
 		public const float zFar = 40f;
 
@@ -38,13 +38,11 @@ namespace OpenTK_Test
 			}
 		}
 
-		private Matrix4 projMatrix;
-		private Matrix4 viewMatrix;
-
 
 		public Camera(GameWindow window)
 		{
 			this.window = window;
+			fovy = DegreeToRadian(90);
 		}
 
 		public Matrix4 GetViewMatrix()
@@ -60,7 +58,7 @@ namespace OpenTK_Test
 
 		private Matrix4 GetProjectionMatrix()
 		{
-			return Matrix4.CreatePerspectiveFieldOfView(fovy, window.ClientSize.Width / window.ClientSize.Height, zNear, zFar);
+			return Matrix4.CreatePerspectiveFieldOfView(fovy, (float)window.ClientSize.Width / window.ClientSize.Height, zNear, zFar);
 		}
 
 		public void Move(float x, float y, float z)
@@ -87,6 +85,11 @@ namespace OpenTK_Test
 
 			Orientation.X = (Orientation.X + x) % ((float)Math.PI * 2.0f);
 			Orientation.Y = Math.Max(Math.Min(Orientation.Y + y, (float)Math.PI / 2.0f - 0.1f), (float)-Math.PI / 2.0f + 0.1f);
+		}
+
+		private float DegreeToRadian(float angle)
+		{
+			return (float)(Math.PI * angle / 180.0);
 		}
 	}
 }
