@@ -6,11 +6,22 @@ using System.Threading.Tasks;
 using System.IO;
 using OpenTK;
 using OpenTK.Graphics.OpenGL;
+using System.Diagnostics;
 
 namespace OpenTK_Test
 {
 	public class Shader : IDisposable
 	{
+		[Conditional("DEBUG")]
+		[DebuggerStepThrough]
+		public static void CheckLastError()
+		{
+			ErrorCode errorCode = GL.GetError();
+			if (errorCode != ErrorCode.NoError)
+			{
+				throw new Exception(errorCode.ToString());
+			}
+		}
 		public int Handle;
 
 		public Shader(string vertexPath, string fragmentPath)

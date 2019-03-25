@@ -10,15 +10,6 @@ namespace OpenTK_Test
 {
 	public sealed class MainWindow : GameWindow
 	{
-		Model model;
-		Vector2 lastMousePos = new Vector2();
-
-		Camera cam;
-		Matrix4 ViewProjectionMatrix;
-		Shader shader;
-		
-		public MainWindow(int width, int height, string title) : base(width, height, GraphicsMode.Default, title) { }
-
 		[Conditional("DEBUG")]
 		[DebuggerStepThrough]
 		public static void CheckLastError()
@@ -30,6 +21,26 @@ namespace OpenTK_Test
 			}
 		}
 
+		Skybox skybox;
+		Model model;
+		Vector2 lastMousePos = new Vector2();
+
+		Camera cam;
+		Matrix4 ViewProjectionMatrix;
+		Shader shader;
+
+		string[] skyboxFaces =
+		{
+			"resources/skybox/right.jpg",
+			"resources/skybox/left.jpg",
+			"resources/skybox/top.jpg",
+			"resources/skybox/bottom.jpg",
+			"resources/skybox/front.jpg",
+			"resources/skybox/back.jpg"
+		};
+		
+		public MainWindow(int width, int height, string title) : base(width, height, GraphicsMode.Default, title) { }
+
 		protected override void OnResize(EventArgs e)
 		{
 			GL.Viewport(0, 0, Width, Height);
@@ -37,13 +48,17 @@ namespace OpenTK_Test
 		}
 		protected override void OnLoad(EventArgs e)
 		{
+			skybox = new Skybox(skyboxFaces);
+			CheckLastError();
 			model = new Model("C:/Users/User/source/repos/OpenTK Test/OpenTK Test/bin/Debug/resources/nanosuit.obj");
 			cam = new Camera(this);
 			lastMousePos = new Vector2(Mouse.GetState().X, Mouse.GetState().Y);
 			CursorVisible = false;
 
 			GL.Enable(EnableCap.DepthTest);
+			CheckLastError();
 			GL.ClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+			CheckLastError();
 			shader = new Shader("../../shader.vert", "../../shader.frag");
 			base.OnLoad(e);
 		}
@@ -55,7 +70,12 @@ namespace OpenTK_Test
 			ViewProjectionMatrix = cam.GetViewMatrix() * cam.ProjectionMatrix;
 			shader.SetMatrix4("mvp", ViewProjectionMatrix);
 			GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
+			CheckLastError();
 			model.Draw(shader);
+
+			skybox.Draw(ViewProjectionMatrix);
+			CheckLastError();
+
 			Context.SwapBuffers();
 			
 			base.OnRenderFrame(e);
@@ -126,6 +146,7 @@ namespace OpenTK_Test
 		{
 			GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
 			shader.Dispose();
+			skybox.shader.Dispose();
 			base.OnUnload(e);
 		}
 
