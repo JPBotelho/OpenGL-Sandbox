@@ -49,16 +49,14 @@ namespace OpenTK_Test
 		protected override void OnLoad(EventArgs e)
 		{
 			skybox = new Skybox(skyboxFaces);
-			CheckLastError();
-			model = new Model("C:/Users/User/source/repos/OpenTK Test/OpenTK Test/bin/Debug/resources/nanosuit.obj");
+			model = new Model("C:/Users/User/source/repos/OpenTK Test/OpenTK Test/bin/Debug/resources/nanosuit/nanosuit.obj");
 			cam = new Camera(this);
 			lastMousePos = new Vector2(Mouse.GetState().X, Mouse.GetState().Y);
 			CursorVisible = false;
 
 			GL.Enable(EnableCap.DepthTest);
-			CheckLastError();
+			GL.DepthFunc(DepthFunction.Always);
 			GL.ClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-			CheckLastError();
 			shader = new Shader("../../shader.vert", "../../shader.frag");
 			base.OnLoad(e);
 		}
@@ -70,11 +68,13 @@ namespace OpenTK_Test
 			ViewProjectionMatrix = cam.GetViewMatrix() * cam.ProjectionMatrix;
 			shader.SetMatrix4("mvp", ViewProjectionMatrix);
 			GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
-			CheckLastError();
 			model.Draw(shader);
 
-			skybox.Draw(ViewProjectionMatrix);
-			CheckLastError();
+			GL.DepthFunc(DepthFunction.Lequal);
+			skybox.shader.SetMatrix4("proj", cam.ProjectionMatrix);
+			skybox.shader.SetMatrix4("view", cam.GetViewMatrix());
+			skybox.Draw(cam.GetViewMatrix() * cam.ProjectionMatrix);
+			GL.DepthFunc(DepthFunction.Less);
 
 			Context.SwapBuffers();
 			

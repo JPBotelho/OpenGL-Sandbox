@@ -79,6 +79,7 @@ namespace OpenTK_Test
 			if (faces.Length != 6)
 				throw new ArgumentException("Skybox constructors require exactly six textures.");
 			this.faces = faces;
+			LoadCubemap(faces);
 			Setup();
 		}
 
@@ -87,11 +88,10 @@ namespace OpenTK_Test
 			shader.Use();
 			shader.SetMatrix4("mvp", mvp);
 			GL.BindVertexArray(vao);
-			CheckLastError();
+			GL.ActiveTexture(TextureUnit.Texture0);
 			GL.BindTexture(TextureTarget.TextureCubeMap, cubemapID);
-			CheckLastError();
+
 			GL.DrawArrays(PrimitiveType.Triangles, 0, 36);
-			CheckLastError();
 		}
 
 		private void Setup()
@@ -99,16 +99,11 @@ namespace OpenTK_Test
 			vbo = GL.GenBuffer();
 			vao = GL.GenVertexArray();
 			GL.BindVertexArray(vao);
-			CheckLastError();
 			GL.BindBuffer(BufferTarget.ArrayBuffer, vbo);
-			CheckLastError();
 
 			GL.BufferData(BufferTarget.ArrayBuffer, sizeof(float) * skyboxVertices.Length, skyboxVertices, BufferUsageHint.StaticDraw);
-			CheckLastError();
 			GL.EnableVertexAttribArray(0);
-			CheckLastError();
 			GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, 3 * sizeof(float), 0);
-			CheckLastError();
 
 			shader = new Shader("../../skybox.vs", "../../skybox.fs");
 			shader.Use();
@@ -118,13 +113,12 @@ namespace OpenTK_Test
 		private int LoadCubemap(string[] faces)
 		{
 			cubemapID = GL.GenTexture();
-			CheckLastError();
 			GL.BindTexture(TextureTarget.TextureCubeMap, cubemapID);
-			CheckLastError();
 
 			for (int i = 0; i < faces.Length; i++)
 			{
-				Image<Rgba32> image = Image.Load(faces[i]);
+				Image<Rgba32> image = Image.Load("C:/Users/User/source/repos/OpenTK Test/OpenTK Test/bin/Debug/" + faces[i]);
+				Console.WriteLine("C:/Users/User/source/repos/OpenTK Test/OpenTK Test/bin/Debug/" + faces[i]);
 				image.Mutate(x => x.Flip(FlipMode.Vertical));
 				Rgba32[] tempPixels = image.GetPixelSpan().ToArray();
 				List<byte> pixels = new List<byte>();
@@ -135,22 +129,17 @@ namespace OpenTK_Test
 					pixels.Add(p.B);
 					pixels.Add(p.A);
 				}
+				Console.WriteLine(pixels.Count);
 
 				GL.TexImage2D(TextureTarget.TextureCubeMapPositiveX + i, 0, PixelInternalFormat.Rgba, image.Width, image.Height, 0, PixelFormat.Rgba, PixelType.UnsignedByte, pixels.ToArray());
-				CheckLastError();
 				Console.WriteLine(i);
 			}
 
 			GL.TexParameter(TextureTarget.TextureCubeMap, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Linear);
-			CheckLastError();
 			GL.TexParameter(TextureTarget.TextureCubeMap, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear);
-			CheckLastError();
 			GL.TexParameter(TextureTarget.TextureCubeMap, TextureParameterName.TextureWrapS, (int)TextureWrapMode.ClampToEdge);
-			CheckLastError();
 			GL.TexParameter(TextureTarget.TextureCubeMap, TextureParameterName.TextureWrapT, (int)TextureWrapMode.ClampToEdge);
-			CheckLastError();
 			GL.TexParameter(TextureTarget.TextureCubeMap, TextureParameterName.TextureWrapR, (int)TextureWrapMode.ClampToEdge);
-			CheckLastError();
 			return cubemapID;
 		}
 	}
