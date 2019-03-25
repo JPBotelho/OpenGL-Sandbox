@@ -26,7 +26,6 @@ namespace OpenTK_Test
 		Vector2 lastMousePos = new Vector2();
 
 		Camera cam;
-		Matrix4 ViewProjectionMatrix;
 		Shader shader;
 
 		string[] skyboxFaces =
@@ -65,15 +64,13 @@ namespace OpenTK_Test
 		{
 			Title = $"(Vsync: {VSync}) FPS: {1f / e.Time:0}";
 			shader.Use();
-			ViewProjectionMatrix = cam.GetViewMatrix() * cam.ProjectionMatrix;
-			shader.SetMatrix4("mvp", ViewProjectionMatrix);
+			shader.SetMatrix4("viewMatrix", cam.ViewMatrix);
+			shader.SetMatrix4("projMatrix", cam.ProjectionMatrix);
 			GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 			model.Draw(shader);
 
 			GL.DepthFunc(DepthFunction.Lequal);
-			skybox.shader.SetMatrix4("proj", cam.ProjectionMatrix);
-			skybox.shader.SetMatrix4("view", cam.GetViewMatrix());
-			skybox.Draw(cam.GetViewMatrix() * cam.ProjectionMatrix);
+			skybox.Draw(cam.ViewMatrix, cam.ProjectionMatrix);
 			GL.DepthFunc(DepthFunction.Less);
 
 			Context.SwapBuffers();

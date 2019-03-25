@@ -11,7 +11,7 @@ namespace OpenTK_Test
 	
 	class Camera
 	{
-		public const float fovy = 1.3f;
+		public const float fovy = 2f;
 		public const float zNear = .1f;
 		public const float zFar = 40f;
 
@@ -26,14 +26,21 @@ namespace OpenTK_Test
 		{
 			get
 			{
-				if(projMatrix == default(Matrix4))
-				{
-					projMatrix = GetProjectionMatrix();
-				}
-				return projMatrix;
+				return GetProjectionMatrix();
 			}
 		}
+
+		public Matrix4 ViewMatrix
+		{
+			get
+			{
+				return GetViewMatrix();
+			}
+		}
+
 		private Matrix4 projMatrix;
+		private Matrix4 viewMatrix;
+
 
 		public Camera(GameWindow window)
 		{

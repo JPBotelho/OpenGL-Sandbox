@@ -83,10 +83,11 @@ namespace OpenTK_Test
 			Setup();
 		}
 
-		public void Draw(Matrix4 mvp)
+		public void Draw(Matrix4 view, Matrix4 proj)
 		{
 			shader.Use();
-			shader.SetMatrix4("mvp", mvp);
+			shader.SetMatrix4("viewMatrix", view);
+			shader.SetMatrix4("projMatrix", proj);
 			GL.BindVertexArray(vao);
 			GL.ActiveTexture(TextureUnit.Texture0);
 			GL.BindTexture(TextureTarget.TextureCubeMap, cubemapID);
