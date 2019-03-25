@@ -180,37 +180,10 @@ namespace OpenTK_Test
 
 		private uint TextureFromFile(string path, string directory)
 		{
-			//Console.WriteLine(path + "\n\n\n" + directory);
-			//Console.ReadKey();
-			uint textureID;
-			GL.GenTextures(1, out textureID);
+			string tPath = System.IO.Path.Combine(directory, path);
+			Texture t = new Texture(tPath);
 
-			Image<Rgba32> image = Image.Load(System.IO.Path.Combine(directory, path));
-			Rgba32[] tempPixels = image.GetPixelSpan().ToArray();
-			List<byte> pixels = new List<byte>();
-			foreach (Rgba32 p in tempPixels)
-			{
-				pixels.Add(p.R);
-				pixels.Add(p.G);
-				pixels.Add(p.B);
-				pixels.Add(p.A);
-			}
-
-			//Now, set the wrapping mode. S is for the X axis, and T is for the Y axis.
-			//We set this to Repeat so that textures will repeat when wrapped. Not demonstrated here since the texture coordinates exactly match
-			GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)OpenTK.Graphics.OpenGL4.TextureWrapMode.Repeat);
-			GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)OpenTK.Graphics.OpenGL4.TextureWrapMode.Repeat);
-
-			GL.BindTexture(TextureTarget.Texture2D, textureID);
-			GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, image.Width, image.Height, 0, PixelFormat.Rgba, PixelType.UnsignedByte, pixels.ToArray());
-			GL.GenerateMipmap(GenerateMipmapTarget.Texture2D);
-
-			GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)OpenTK.Graphics.OpenGL4.TextureWrapMode.Repeat);
-			GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)OpenTK.Graphics.OpenGL4.TextureWrapMode.Repeat);
-			GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.LinearMipmapLinear);
-			GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear);
-
-			return textureID;
+			return (uint)t.Handle;
 		}
 	}
 }

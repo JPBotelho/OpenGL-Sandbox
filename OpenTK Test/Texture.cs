@@ -10,9 +10,9 @@ using SixLabors.ImageSharp.Processing;
 namespace OpenTK_Test
 {
 	//A helper class, much like Shader, meant to simplify loading textures.
-	public class Texture : IDisposable
+	public class Texture
 	{
-		int Handle;
+		public int Handle;
 
 		//Create texture from path.
 		public Texture(string path)
@@ -59,34 +59,6 @@ namespace OpenTK_Test
 		{
 			GL.ActiveTexture(unit);
 			GL.BindTexture(TextureTarget.Texture2D, Handle);
-		}
-
-		private bool disposedValue = false;
-
-		protected virtual void Dispose(bool disposing)
-		{
-			if (!disposedValue)
-			{
-				if (disposing)
-				{
-					// TODO: dispose managed state (managed objects).
-				}
-
-				GL.DeleteProgram(Handle);
-				disposedValue = true;
-			}
-		}
-
-		~Texture()
-		{
-			GL.DeleteProgram(Handle);
-		}
-
-
-		public void Dispose()
-		{
-			Dispose(true);
-			GC.SuppressFinalize(this);
 		}
 	}
 }
