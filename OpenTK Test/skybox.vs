@@ -10,6 +10,5 @@ void main()
 {
 	TexCoords = aPos;
 	vec4 MVP_Pos = vec4(aPos, 0) * viewMatrix * projMatrix;
-	MVP_Pos.xy*=-1;
     gl_Position = MVP_Pos.xyww;	
 } 

@@ -120,7 +120,7 @@ namespace OpenTK_Test
 			{
 				Image<Rgba32> image = Image.Load("C:/Users/User/source/repos/OpenTK Test/OpenTK Test/bin/Debug/" + faces[i]);
 				Console.WriteLine("C:/Users/User/source/repos/OpenTK Test/OpenTK Test/bin/Debug/" + faces[i]);
-				image.Mutate(x => x.Flip(FlipMode.Vertical));
+				//image.Mutate(x => x.Flip(FlipMode.Vertical));
 				Rgba32[] tempPixels = image.GetPixelSpan().ToArray();
 				List<byte> pixels = new List<byte>();
 				foreach (Rgba32 p in tempPixels)

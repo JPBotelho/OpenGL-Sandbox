@@ -32,8 +32,8 @@ namespace OpenTK_Test
 		{
 			"resources/skybox/right.jpg",
 			"resources/skybox/left.jpg",
-			"resources/skybox/bottom.jpg",
 			"resources/skybox/top.jpg",
+			"resources/skybox/bottom.jpg",
 			"resources/skybox/front.jpg",
 			"resources/skybox/back.jpg"
 		};
