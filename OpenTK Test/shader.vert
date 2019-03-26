@@ -11,6 +11,6 @@ uniform mat4 projMatrix;
 
 void main()
 {
-    TexCoords = aTexCoords;    
+    TexCoords = aTexCoords;
     gl_Position = vec4(aPos, 1.0) * viewMatrix * projMatrix;
 }

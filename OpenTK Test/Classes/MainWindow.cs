@@ -10,6 +10,7 @@ namespace OpenTK_Test
 {
 	public sealed class MainWindow : GameWindow
 	{
+		bool firstMove = true;
 		[Conditional("DEBUG")]
 		[DebuggerStepThrough]
 		public static void CheckLastError()
@@ -23,7 +24,6 @@ namespace OpenTK_Test
 
 		Skybox skybox;
 		Model model;
-		Vector2 lastMousePos = new Vector2();
 
 		Camera cam;
 		Shader shader;
@@ -42,6 +42,7 @@ namespace OpenTK_Test
 
 		protected override void OnResize(EventArgs e)
 		{
+			cam.AspectRatio = (float)Width / Height;
 			GL.Viewport(0, 0, Width, Height);
 			base.OnResize(e);
 		}
@@ -49,10 +50,10 @@ namespace OpenTK_Test
 		{
 			skybox = new Skybox(skyboxFaces);
 			model = new Model("C:/Users/User/source/repos/OpenTK Test/OpenTK Test/bin/Debug/resources/nanosuit/nanosuit.obj");
-			cam = new Camera(this);
-			lastMousePos = new Vector2(Mouse.GetState().X, Mouse.GetState().Y);
+			cam = new Camera(Vector3.UnitZ * 3);
+			cam.AspectRatio = (float)Width / Height;
 			CursorVisible = false;
-
+			
 			GL.Enable(EnableCap.DepthTest);
 			GL.DepthFunc(DepthFunction.Always);
 			GL.ClearColor(0.2f, 0.3f, 0.3f, 1.0f);
@@ -64,13 +65,15 @@ namespace OpenTK_Test
 		{
 			Title = $"(Vsync: {VSync}) FPS: {1f / e.Time:0}";
 			shader.Use();
-			shader.SetMatrix4("viewMatrix", cam.ViewMatrix);
-			shader.SetMatrix4("projMatrix", cam.ProjectionMatrix);
+			Matrix4 view = cam.GetViewMatrix();
+			Matrix4 proj = cam.GetProjectionMatrix();
+			shader.SetMatrix4("viewMatrix", view);
+			shader.SetMatrix4("projMatrix", proj);
 			GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 			model.Draw(shader);
 
 			GL.DepthFunc(DepthFunction.Lequal);
-			skybox.Draw(cam.ViewMatrix, cam.ProjectionMatrix);
+			skybox.Draw(view, proj);
 			GL.DepthFunc(DepthFunction.Less);
 
 			Context.SwapBuffers();
@@ -80,63 +83,55 @@ namespace OpenTK_Test
 
 		protected override void OnUpdateFrame(FrameEventArgs e)
 		{
-			HandleKeyboard();
+			HandleKeyboard(e);
 			base.OnUpdateFrame(e);
 		}
 
-		private void HandleKeyboard()
+		private void HandleKeyboard(FrameEventArgs e)
 		{
-			var keyState = Keyboard.GetState();
+			float deltatime = (float)(1f / e.Time);
+			var input = Keyboard.GetState();
 
-			if (keyState.IsKeyDown(Key.Escape))
-			{
+			if (input.IsKeyDown(Key.Escape))
 				Exit();
-			}
-			if (Keyboard.GetState().IsKeyDown(Key.W))
+			if (input.IsKeyDown(Key.W))
+				cam.Position += cam.Front * cam.Speed * (float)e.Time; //Forward 
+			if (input.IsKeyDown(Key.S))
+				cam.Position -= cam.Front * cam.Speed * (float)e.Time; //Backwards
+			if (input.IsKeyDown(Key.A))
+				cam.Position -= cam.Right * cam.Speed * (float)e.Time; //Left
+			if (input.IsKeyDown(Key.D))
+				cam.Position += cam.Right * cam.Speed * (float)e.Time; //Right
+			if (input.IsKeyDown(Key.Space))
+				cam.Position += cam.Up * cam.Speed * (float)e.Time; //Up 
+			if (input.IsKeyDown(Key.LShift))
+				cam.Position -= cam.Up * cam.Speed * (float)e.Time; //Down
+		}
+
+		protected override void OnMouseMove(MouseMoveEventArgs e)
+		{
+			if (firstMove)
 			{
-				cam.Move(0f, 0.1f, 0f);
+				firstMove = false;
+				base.OnMouseMove(e);
+				return;
 			}
 
-			if (Keyboard.GetState().IsKeyDown(Key.S))
-			{
-				cam.Move(0f, -0.1f, 0f);
-			}
+			cam.Pitch -= e.YDelta * cam.Sensitivity;
+			cam.Yaw += e.XDelta * cam.Sensitivity;
 
-			if (Keyboard.GetState().IsKeyDown(Key.A))
-			{
-				cam.Move(-0.1f, 0f, 0f);
-			}
+			base.OnMouseMove(e);
+		}
 
-			if (Keyboard.GetState().IsKeyDown(Key.D))
-			{
-				cam.Move(0.1f, 0f, 0f);
-			}
-
-			if (Keyboard.GetState().IsKeyDown(Key.Q))
-			{
-				cam.Move(0f, 0f, 0.1f);
-			}
-
-			if (Keyboard.GetState().IsKeyDown(Key.E))
-			{
-				cam.Move(0f, 0f, -0.1f);
-			}
-
-			if (Focused)
-			{
-				Vector2 delta = lastMousePos - new Vector2(OpenTK.Input.Mouse.GetState().X, OpenTK.Input.Mouse.GetState().Y);
-				lastMousePos += delta;
-
-				cam.AddRotation(delta.X, delta.Y);
-				lastMousePos = new Vector2(OpenTK.Input.Mouse.GetState().X, OpenTK.Input.Mouse.GetState().Y);
-			}
-
+		protected override void OnMouseWheel(MouseWheelEventArgs e)
+		{
+			cam.Fov -= e.DeltaPrecise;
+			base.OnMouseWheel(e);
 		}
 
 		protected override void OnFocusedChanged(EventArgs e)
 		{
 			base.OnFocusedChanged(e);
-			lastMousePos = new Vector2(Mouse.GetState().X, Mouse.GetState().Y);
 		}
 
 		protected override void OnUnload(EventArgs e)
