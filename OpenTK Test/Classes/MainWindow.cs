@@ -93,23 +93,26 @@ namespace OpenTK_Test
 
 		private void HandleKeyboard(FrameEventArgs e)
 		{
-			float deltatime = (float)(1f / e.Time);
-			var input = Keyboard.GetState();
+			if (Focused)
+			{
+				float deltatime = (float)(1f / e.Time);
+				var input = Keyboard.GetState();
 
-			if (input.IsKeyDown(Key.Escape))
-				Exit();
-			if (input.IsKeyDown(Key.W))
-				cam.Position += cam.Front * cam.Speed * (float)e.Time; //Forward 
-			if (input.IsKeyDown(Key.S))
-				cam.Position -= cam.Front * cam.Speed * (float)e.Time; //Backwards
-			if (input.IsKeyDown(Key.A))
-				cam.Position -= cam.Right * cam.Speed * (float)e.Time; //Left
-			if (input.IsKeyDown(Key.D))
-				cam.Position += cam.Right * cam.Speed * (float)e.Time; //Right
-			if (input.IsKeyDown(Key.Space))
-				cam.Position += cam.Up * cam.Speed * (float)e.Time; //Up 
-			if (input.IsKeyDown(Key.LShift))
-				cam.Position -= cam.Up * cam.Speed * (float)e.Time; //Down
+				if (input.IsKeyDown(Key.Escape))
+					Exit();
+				if (input.IsKeyDown(Key.W))
+					cam.Position += cam.Front * cam.Speed * (float)e.Time; //Forward 
+				if (input.IsKeyDown(Key.S))
+					cam.Position -= cam.Front * cam.Speed * (float)e.Time; //Backwards
+				if (input.IsKeyDown(Key.A))
+					cam.Position -= cam.Right * cam.Speed * (float)e.Time; //Left
+				if (input.IsKeyDown(Key.D))
+					cam.Position += cam.Right * cam.Speed * (float)e.Time; //Right
+				if (input.IsKeyDown(Key.Space))
+					cam.Position += cam.Up * cam.Speed * (float)e.Time; //Up 
+				if (input.IsKeyDown(Key.LShift))
+					cam.Position -= cam.Up * cam.Speed * (float)e.Time; //Down
+			}
 
 			if (Focused)
 			{

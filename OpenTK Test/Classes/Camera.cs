@@ -54,9 +54,9 @@ namespace OpenTK_Test
 			get => fov;
 			set
 			{
-				if (value >= 90)
+				if (value >= 45)
 				{
-					fov = 90;
+					fov = 45;
 				}
 				else if (value <= 1.0f)
 				{
@@ -78,7 +78,7 @@ namespace OpenTK_Test
 		public Matrix4 GetViewMatrix() =>
 			Matrix4.LookAt(Position, Position + Front, Up);
 		public Matrix4 GetProjectionMatrix() =>
-			Matrix4.CreatePerspectiveFieldOfView((float)rad(45), 1600.0f / 1200.0f, 0.01f, 300);
+			Matrix4.CreatePerspectiveFieldOfView((float)rad(65), 1600.0f / 1200.0f, 0.01f, 300);
 
 		private void UpdateVertices()
 		{

@@ -56,12 +56,28 @@ namespace OpenTK_Test
 			int index = path.LastIndexOf("/");
 			directory = path.Substring(0, index);
 
+			/*List<string> paths = new List<string>();
+			int test = 0;
+			foreach (Material mat in scene.Materials)
+			{
+				foreach (TextureSlot slot in mat.GetAllMaterialTextures())
+				{
+					if (!paths.Contains(slot.FilePath))
+					{
+						Console.WriteLine(slot.TextureType + " -- " + slot.FilePath);
+						paths.Add(slot.FilePath);
+						test++;
+					}
+				}
+			}
+			Console.WriteLine(test);*/
+
 			ProcessNode(scene.RootNode, scene);
 		}
 
 		private void ProcessNode(Node node, Scene scene)
 		{
-			for(int i = 0; i < node.MeshCount; i++)
+			for (int i = 0; i < node.MeshCount; i++)
 			{
 				Assimp.Mesh mesh = scene.Meshes[node.MeshIndices[i]];
 				meshes.Add(ProcessMesh(mesh, scene));
@@ -72,6 +88,7 @@ namespace OpenTK_Test
 				ProcessNode(node.Children[i], scene);
 			}
 		}
+		List<string> paths = new List<string>();
 
 		private Mesh ProcessMesh(Assimp.Mesh mesh, Scene scene)
 		{
@@ -131,6 +148,16 @@ namespace OpenTK_Test
 				}
 			}
 			Material material = scene.Materials[mesh.MaterialIndex];
+			/*int test = 0;
+			foreach (TextureSlot slot in material.GetAllMaterialTextures())
+			{
+				if (!paths.Contains(slot.FilePath))
+				{
+					Console.WriteLine(slot.TextureType + " -- " + slot.FilePath);
+					paths.Add(slot.FilePath);
+					test++;
+				}
+			}*/
 
 			List<TextureInfo> diffuseMaps = LoadMaterialTextures(material, TextureType.Diffuse, "texture_diffuse");
 			textures.AddRange(diffuseMaps);
@@ -167,6 +194,7 @@ namespace OpenTK_Test
 				}
 				if (!skip)
 				{   // if texture hasn't been loaded already, load it
+					Console.WriteLine(str.TextureType + " -- " + str.FilePath);
 					TextureInfo texture;
 					texture.id = TextureFromFile(str.FilePath, directory);
 					texture.type = typeName;
@@ -177,13 +205,11 @@ namespace OpenTK_Test
 			}
 			return textures;
 		}
-		int tcount = 1;
+
 		private uint TextureFromFile(string path, string directory)
 		{
 			string tPath = System.IO.Path.Combine(directory, path);
 			Texture t = new Texture(tPath);
-			Console.WriteLine(tcount + ": " + tPath +"\n");
-			tcount++;
 
 			return (uint)t.Handle;
 		}
