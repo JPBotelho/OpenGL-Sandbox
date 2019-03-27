@@ -7,10 +7,12 @@ out vec2 TexCoords;
 
 uniform mat4 viewMatrix;
 uniform mat4 projMatrix;
+uniform mat4 modelMatrix;
+
 
 
 void main()
 {
     TexCoords = aTexCoords;
-    gl_Position = vec4(aPos, 1.0) * viewMatrix * projMatrix;
+    gl_Position = vec4(aPos, 1.0) * modelMatrix * viewMatrix * projMatrix;
 }

@@ -177,11 +177,13 @@ namespace OpenTK_Test
 			}
 			return textures;
 		}
-
+		int tcount = 1;
 		private uint TextureFromFile(string path, string directory)
 		{
 			string tPath = System.IO.Path.Combine(directory, path);
 			Texture t = new Texture(tPath);
+			Console.WriteLine(tcount + ": " + tPath +"\n");
+			tcount++;
 
 			return (uint)t.Handle;
 		}

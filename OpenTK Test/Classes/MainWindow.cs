@@ -27,6 +27,8 @@ namespace OpenTK_Test
 
 		Camera cam;
 		Shader shader;
+		Vector2 lastPos;
+
 
 		string[] skyboxFaces =
 		{
@@ -48,14 +50,14 @@ namespace OpenTK_Test
 		}
 		protected override void OnLoad(EventArgs e)
 		{
-			skybox = new Skybox(skyboxFaces);
+			//skybox = new Skybox(skyboxFaces);
 			model = new Model("C:/Users/User/source/repos/OpenTK Test/OpenTK Test/bin/Debug/resources/sponza/sponza.obj");
 			cam = new Camera(Vector3.UnitZ * 3);
 			cam.AspectRatio = (float)Width / Height;
 			CursorVisible = false;
 			
 			GL.Enable(EnableCap.DepthTest);
-			GL.DepthFunc(DepthFunction.Always);
+			//GL.DepthFunc(DepthFunction.Always);
 			GL.ClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 			shader = new Shader("../../shader.vert", "../../shader.frag");
 			base.OnLoad(e);
@@ -67,14 +69,16 @@ namespace OpenTK_Test
 			shader.Use();
 			Matrix4 view = cam.GetViewMatrix();
 			Matrix4 proj = cam.GetProjectionMatrix();
+			Matrix4 modelMatrix = Matrix4.CreateScale(0.1f);
 			shader.SetMatrix4("viewMatrix", view);
 			shader.SetMatrix4("projMatrix", proj);
+			shader.SetMatrix4("modelMatrix", modelMatrix);
 			GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 			model.Draw(shader);
 
-			GL.DepthFunc(DepthFunction.Lequal);
-			skybox.Draw(view, proj);
-			GL.DepthFunc(DepthFunction.Less);
+			//GL.DepthFunc(DepthFunction.Lequal);
+			//skybox.Draw(view, proj);
+			//GL.DepthFunc(DepthFunction.Less);
 
 			Context.SwapBuffers();
 			
@@ -106,19 +110,34 @@ namespace OpenTK_Test
 				cam.Position += cam.Up * cam.Speed * (float)e.Time; //Up 
 			if (input.IsKeyDown(Key.LShift))
 				cam.Position -= cam.Up * cam.Speed * (float)e.Time; //Down
+
+			if (Focused)
+			{
+				MouseState mouse = Mouse.GetState();
+
+				if (firstMove) // this bool variable is initially set to true
+				{
+					lastPos = new Vector2(mouse.X, mouse.Y);
+					firstMove = false;
+				}
+				else
+				{
+					//Calculate the offset of the mouse position
+					float deltaX = mouse.X - lastPos.X;
+					float deltaY = mouse.Y - lastPos.Y;
+					lastPos = new Vector2(mouse.X, mouse.Y);
+
+					//Apply the camera pitch and yaw (we clamp the pitch in the camera class)
+					cam.Yaw += deltaX * cam.Sensitivity;
+					cam.Pitch -= deltaY * cam.Sensitivity; // reversed since y-coordinates range from bottom to top
+				}
+			}
 		}
 
 		protected override void OnMouseMove(MouseMoveEventArgs e)
 		{
-			if (firstMove)
-			{
-				firstMove = false;
-				base.OnMouseMove(e);
-				return;
-			}
-
-			cam.Pitch -= e.YDelta * cam.Sensitivity;
-			cam.Yaw += e.XDelta * cam.Sensitivity;
+			if(Focused)
+				Mouse.SetPosition(X + Width / 2f, Y + Height / 2f);
 
 			base.OnMouseMove(e);
 		}
@@ -138,7 +157,7 @@ namespace OpenTK_Test
 		{
 			GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
 			shader.Dispose();
-			skybox.shader.Dispose();
+			//skybox.shader.Dispose();
 			base.OnUnload(e);
 		}
 
