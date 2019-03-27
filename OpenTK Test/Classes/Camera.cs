@@ -45,8 +45,8 @@ namespace OpenTK_Test
 			}
 		}
 
-		public float Speed = 5f;
-		public float Sensitivity = 0.2f;
+		public float Speed = 150;
+		public float Sensitivity = 1f;
 
 		private float fov = 90;
 		public float Fov
@@ -78,7 +78,7 @@ namespace OpenTK_Test
 		public Matrix4 GetViewMatrix() =>
 			Matrix4.LookAt(Position, Position + Front, Up);
 		public Matrix4 GetProjectionMatrix() =>
-			Matrix4.CreatePerspectiveFieldOfView((float)rad(45), 1600.0f / 1200.0f, 0.01f, 100f);
+			Matrix4.CreatePerspectiveFieldOfView((float)rad(45), 1600.0f / 1200.0f, 0.01f, 10000f);
 
 		private void UpdateVertices()
 		{

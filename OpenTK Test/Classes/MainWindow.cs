@@ -49,7 +49,7 @@ namespace OpenTK_Test
 		protected override void OnLoad(EventArgs e)
 		{
 			skybox = new Skybox(skyboxFaces);
-			model = new Model("C:/Users/User/source/repos/OpenTK Test/OpenTK Test/bin/Debug/resources/nanosuit/nanosuit.obj");
+			model = new Model("C:/Users/User/source/repos/OpenTK Test/OpenTK Test/bin/Debug/resources/sponza/sponza.obj");
 			cam = new Camera(Vector3.UnitZ * 3);
 			cam.AspectRatio = (float)Width / Height;
 			CursorVisible = false;

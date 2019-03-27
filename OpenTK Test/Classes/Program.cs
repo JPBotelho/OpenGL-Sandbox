@@ -10,7 +10,7 @@ namespace OpenTK_Test
 	{
 		static void Main()
 		{
-			new MainWindow(1600, 1200, "Test OpenTK").Run(60.0);
+			new MainWindow(800, 600, "Test OpenTK").Run(60.0);
 		}
 	}
 }
