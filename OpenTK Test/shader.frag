@@ -9,16 +9,13 @@ uniform sampler2D texture_specular1;
 uniform vec3 cameraPos;
 
 void main()
-{    
+{  
 	vec2 tCoords = TexCoords * vec2(1, -1);
 	vec3 lightColor = vec3(1, 1, 1);
 	float lightAmbient = 0.1;
 	float lightDiffuse = 1;
 	float lightSpecular = 1;
-	
-	vec3 materialambient = vec3(1.0f, 0.5f, 0.31f);
-	vec3 materialdiffuse = vec3(1.0f, 0.5f, 0.31f);
-	vec3 materialspecular = vec3(0.5f, 0.5f, 0.5f);
+
 	float materialshininess= 32.0f;
  	
     // diffuse 

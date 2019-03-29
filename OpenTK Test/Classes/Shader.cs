@@ -73,6 +73,12 @@ namespace OpenTK_Test
 			GL.UseProgram(Handle);
 		}
 
+		public void SetFloat(string name, float value)
+		{
+			GL.UseProgram(Handle);
+			GL.Uniform1(GL.GetUniformLocation(Handle, name), value);
+		}
+
 		public void SetInt(string name, int value)
 		{
 			GL.UseProgram(Handle);
