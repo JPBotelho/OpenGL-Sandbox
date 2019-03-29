@@ -86,6 +86,13 @@ namespace OpenTK_Test
 			GL.UniformMatrix4(location, true, ref data);
 		}
 
+		public void SetVec3(string name, Vector3 data)
+		{
+			GL.UseProgram(Handle);
+			var location = GL.GetUniformLocation(Handle, name);
+			GL.Uniform3(location, data);
+		}
+
 		public int GetAttribLocation(string attribName)
 		{
 			return GL.GetAttribLocation(Handle, attribName);

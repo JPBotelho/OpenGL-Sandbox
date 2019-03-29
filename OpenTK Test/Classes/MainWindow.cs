@@ -51,6 +51,7 @@ namespace OpenTK_Test
 		protected override void OnLoad(EventArgs e)
 		{
 			//skybox = new Skybox(skyboxFaces);
+			shader = new Shader("../../shader.vert", "../../shader.frag");
 			model = new Model("C:/Users/User/source/repos/OpenTK Test/OpenTK Test/bin/Debug/resources/sponza/sponza.obj");
 			cam = new Camera(Vector3.UnitZ * 3);
 			cam.AspectRatio = (float)Width / Height;
@@ -59,7 +60,6 @@ namespace OpenTK_Test
 			GL.Enable(EnableCap.DepthTest);
 			//GL.DepthFunc(DepthFunction.Always);
 			GL.ClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-			shader = new Shader("../../shader.vert", "../../shader.frag");
 			base.OnLoad(e);
 		}
 
@@ -73,6 +73,7 @@ namespace OpenTK_Test
 			shader.SetMatrix4("viewMatrix", view);
 			shader.SetMatrix4("projMatrix", proj);
 			shader.SetMatrix4("modelMatrix", modelMatrix);
+			shader.SetVec3("cameraPos", cam.Position);
 			GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 			model.Draw(shader);
 
