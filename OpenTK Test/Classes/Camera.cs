@@ -8,7 +8,7 @@ namespace OpenTK_Test
 		public Vector3 Position;
 		private Vector3 front = -Vector3.UnitZ;
 		public Vector3 Front => front;
-		public Vector3 Direction => (Position + Front).Normalized();
+		public Vector3 Direction => (Position + Front);
 		private Vector3 up = Vector3.UnitY;
 		public Vector3 Up => up;
 		private Vector3 right = Vector3.UnitX;
