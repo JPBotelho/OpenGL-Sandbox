@@ -20,6 +20,9 @@ struct PointLight
 	vec3 specular;
 };
 
+#define NR_POINT_LIGHTS 1
+
+
 in vec2 TexCoords;
 in vec3 FragPos;
 in vec3 Normals;
@@ -28,8 +31,8 @@ uniform sampler2D texture_diffuse1;
 uniform sampler2D texture_specular1;
 uniform vec3 cameraPos;
 
-uniform DirectionalLight dirLights[1];
-uniform PointLight pointLights[1];
+uniform DirectionalLight directionalLights[1];
+uniform PointLight pointLights[NR_POINT_LIGHTS];
 
 vec3 CalcDirLight(DirectionalLight light, vec3 normal, vec3 viewDir);
 vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir);
@@ -38,28 +41,15 @@ float materialshininess= 32.0f;
 
 void main()
 {  
-	vec3 lightColor = vec3(1, 1, 1);
-	float lightAmbient = 0.1;
-	float lightDiffuse = 1;
-	float lightSpecular = 1;
-
- 	
-    // diffuse 
-    vec3 norm = normalize(Normals);
-	vec3 lightDir = normalize(vec3(-0.2f, -1.0f, -1.5));
-    float diff = max(dot(norm, lightDir), 0.0);
-    
-    // specular
+	vec3 norm = normalize(Normals);
     vec3 viewDir = normalize(cameraPos - FragPos);
-    vec3 reflectDir = reflect(-lightDir, norm);  
-    float spec = pow(max(dot(viewDir, reflectDir), 0.0), materialshininess);
-	
 
-	vec3 ambient  = lightAmbient  * vec3(texture(texture_diffuse1, TexCoords));
-	vec3 diffuse  = lightDiffuse  * diff * vec3(texture(texture_diffuse1, TexCoords));  
-	vec3 specular = lightSpecular * spec * vec3(texture(texture_specular1, TexCoords));
-
-	FragColor = vec4(ambient + diffuse + specular, 1);	
+	vec3 result = CalcDirLight(directionalLights[0], norm, viewDir);
+	//vec3 result = vec3(0);
+	for(int i = 0; i < NR_POINT_LIGHTS; i++)
+        result += CalcPointLight(pointLights[i], norm, FragPos, viewDir);    
+    
+    FragColor = vec4(result, 1.0);
 }
 
 vec3 CalcDirLight(DirectionalLight light, vec3 normal, vec3 viewDir)

@@ -13,15 +13,15 @@ namespace OpenTK_Test
 
 		public float constant = 1;
 		public float linear = 0.09f;
-		public float quadratic = 0.032f;
+		public float quadratic = 0.0064f;
 
-		public Vector3 ambient = new Vector3(0.1f, 0.1f, 0.1f);
-		public Vector3 diffuse = new Vector3(0.8f, 0.8f, 0.8f);
-		public Vector3 specular = new Vector3(1.0f, 1.0f, 1.0f);
+		public Vector3 ambient = new Vector3(1, 1.0f, 1f);
+		public Vector3 diffuse = new Vector3(1f, 1.0f, 1f);
+		public Vector3 specular = new Vector3(1f, 1.0f, 1f);
 
 		public void Set(Shader shader, int index)
 		{
-			string lightRef = string.Format("directionalLights[{0}].", index);
+			string lightRef = string.Format("pointLights[{0}].", index);
 			shader.SetVec3(lightRef + "position", position);
 
 			shader.SetFloat(lightRef + "constant", constant);
