@@ -5,14 +5,14 @@ using System.Text;
 using System.Threading.Tasks;
 using OpenTK;
 
-namespace OpenTK_Test.Classes
+namespace OpenTK_Test
 {
-	public struct DirectionalLight
+	public class DirectionalLight
 	{
-		Vector3 direction;
-		Vector3 ambient;
-		Vector3 diffuse;
-		Vector3 specular;
+		public Vector3 direction = new Vector3(0.2f, 1f, .3f);
+		public Vector3 ambient = new Vector3(0.1f, 0.1f, 0.1f);
+		public Vector3 diffuse = new Vector3(0.8f, 0.8f, 0.8f);
+		public Vector3 specular = new Vector3(1.0f, 1.0f, 1.0f);
 
 		public void Set(Shader shader, int index)
 		{

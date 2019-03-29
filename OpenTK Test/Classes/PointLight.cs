@@ -5,19 +5,19 @@ using System.Text;
 using System.Threading.Tasks;
 using OpenTK;
 using OpenTK.Graphics.OpenGL4;
-namespace OpenTK_Test.Classes
+namespace OpenTK_Test
 {
-	public struct PointLight
+	public class PointLight
 	{
-		Vector3 position;
+		public Vector3 position;
 
-		float constant;
-		float linear;
-		float quadratic;
+		public float constant = 1;
+		public float linear = 0.09f;
+		public float quadratic = 0.032f;
 
-		Vector3 ambient;
-		Vector3 diffuse;
-		Vector3 specular;
+		public Vector3 ambient = new Vector3(0.1f, 0.1f, 0.1f);
+		public Vector3 diffuse = new Vector3(0.8f, 0.8f, 0.8f);
+		public Vector3 specular = new Vector3(1.0f, 1.0f, 1.0f);
 
 		public void Set(Shader shader, int index)
 		{

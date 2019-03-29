@@ -28,7 +28,8 @@ namespace OpenTK_Test
 		Camera cam;
 		Shader shader;
 		Vector2 lastPos;
-
+		PointLight pointLight;
+		DirectionalLight directionalLight;
 
 		string[] skyboxFaces =
 		{
@@ -56,7 +57,13 @@ namespace OpenTK_Test
 			cam = new Camera(Vector3.UnitZ * 3);
 			cam.AspectRatio = (float)Width / Height;
 			CursorVisible = false;
-			
+
+			directionalLight = new DirectionalLight();
+			pointLight = new PointLight
+			{
+				position = cam.Position
+			};
+
 			GL.Enable(EnableCap.DepthTest);
 			//GL.DepthFunc(DepthFunction.Always);
 			GL.ClearColor(0.2f, 0.3f, 0.3f, 1.0f);
@@ -66,15 +73,19 @@ namespace OpenTK_Test
 		protected override void OnRenderFrame(FrameEventArgs e)
 		{
 			Title = $"(Vsync: {VSync}) FPS: {1f / e.Time:0}";
+			pointLight.position = cam.Position;
 			shader.Use();
 			Matrix4 view = cam.GetViewMatrix();
 			Matrix4 proj = cam.GetProjectionMatrix();
 			Matrix4 modelMatrix = Matrix4.CreateScale(0.1f);
+
 			shader.SetMatrix4("viewMatrix", view);
 			shader.SetMatrix4("projMatrix", proj);
 			shader.SetMatrix4("modelMatrix", modelMatrix);
 			shader.SetVec3("cameraPos", cam.Position);
 			GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
+			directionalLight.Set(shader, 0);
+			pointLight.Set(shader, 0);
 			model.Draw(shader);
 
 			//GL.DepthFunc(DepthFunction.Lequal);
