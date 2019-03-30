@@ -71,6 +71,8 @@ namespace OpenTK_Test
 			};
 
 			GL.Enable(EnableCap.DepthTest);
+			GL.Enable(EnableCap.CullFace);
+			GL.CullFace(CullFaceMode.Back);
 			//GL.DepthFunc(DepthFunction.Always);
 			GL.ClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 			base.OnLoad(e);
@@ -79,7 +81,7 @@ namespace OpenTK_Test
 		protected override void OnRenderFrame(FrameEventArgs e)
 		{
 			Title = $"(Vsync: {VSync}) FPS: {1f / e.Time:0}";
-			pointLight.position = cam.Position;
+			//pointLight.position = cam.Position;
 			spotlight.position = cam.Position;
 			spotlight.direction = cam.Front.Normalized();
 

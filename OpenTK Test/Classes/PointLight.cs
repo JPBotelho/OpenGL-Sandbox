@@ -12,12 +12,12 @@ namespace OpenTK_Test
 		public Vector3 position;
 
 		public float constant = 1;
-		public float linear = 0.09f;
-		public float quadratic = 0.0064f;
+		public float linear = 0.007f;
+		public float quadratic = 0.0002f;
 
 		public Vector3 ambient = new Vector3(1, 1.0f, 1f);
-		public Vector3 diffuse = new Vector3(1f, 1.0f, 1f);
-		public Vector3 specular = new Vector3(1f, 1.0f, 1f);
+		public Vector3 diffuse = new Vector3(1f, 0.0f, 0.0f);
+		public Vector3 specular = new Vector3(1f, .0f, .0f);
 
 		public void Set(Shader shader, int index)
 		{
