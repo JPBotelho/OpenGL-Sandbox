@@ -24,9 +24,10 @@ namespace OpenTK_Test
 		}
 		public int Handle;
 
-		public Shader(string vertexPath, string fragmentPath)
+		public Shader(string vertexPath, string fragmentPath, string geometryPath = null)
 		{
-			int VertexShader, FragmentShader;
+			int VertexShader, FragmentShader, GeometryShader = 0;
+			
 			string VertexShaderSource;
 
 			using (StreamReader reader = new StreamReader(vertexPath, Encoding.UTF8))
@@ -39,6 +40,24 @@ namespace OpenTK_Test
 			using (StreamReader reader = new StreamReader(fragmentPath, Encoding.UTF8))
 			{
 				FragmentShaderSource = reader.ReadToEnd();
+			}
+
+			string GeometryShaderSource;
+
+			if (geometryPath != null)
+			{
+				using (StreamReader reader = new StreamReader(geometryPath, Encoding.UTF8))
+				{
+					GeometryShaderSource = reader.ReadToEnd();
+				}
+
+				GeometryShader = GL.CreateShader(ShaderType.GeometryShader);
+				GL.ShaderSource(GeometryShader, GeometryShaderSource);
+				GL.CompileShader(GeometryShader);
+
+				string log = GL.GetShaderInfoLog(GeometryShader);
+				if (log != "")
+					Console.WriteLine(log);
 			}
 
 			VertexShader = GL.CreateShader(ShaderType.VertexShader);
@@ -64,6 +83,10 @@ namespace OpenTK_Test
 
 			GL.AttachShader(Handle, VertexShader);
 			GL.AttachShader(Handle, FragmentShader);
+			if (geometryPath != null)
+			{
+				GL.AttachShader(Handle, GeometryShader);
+			}
 
 			GL.LinkProgram(Handle);
 		}

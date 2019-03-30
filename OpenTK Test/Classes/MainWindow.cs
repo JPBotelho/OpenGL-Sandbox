@@ -52,12 +52,14 @@ namespace OpenTK_Test
 		}
 		protected override void OnLoad(EventArgs e)
 		{
+			CursorVisible = false;
+
 			//skybox = new Skybox(skyboxFaces);
 			shader = new Shader("../../shader.vert", "../../shader.frag");
 			model = new Model("C:/Users/User/source/repos/OpenTK Test/OpenTK Test/bin/Debug/resources/sponza/sponza.obj");
+
 			cam = new Camera(Vector3.UnitZ * 3);
 			cam.AspectRatio = (float)Width / Height;
-			CursorVisible = false;
 
 			directionalLight = new DirectionalLight();
 			pointLight = new PointLight
@@ -70,9 +72,10 @@ namespace OpenTK_Test
 				direction = cam.Position + cam.Front
 			};
 
-			GL.Enable(EnableCap.DepthTest);
 			GL.Enable(EnableCap.CullFace);
 			GL.CullFace(CullFaceMode.Back);
+
+			GL.Enable(EnableCap.DepthTest);
 			//GL.DepthFunc(DepthFunction.Always);
 			GL.ClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 			base.OnLoad(e);
@@ -81,6 +84,7 @@ namespace OpenTK_Test
 		protected override void OnRenderFrame(FrameEventArgs e)
 		{
 			Title = $"(Vsync: {VSync}) FPS: {1f / e.Time:0}";
+
 			//pointLight.position = cam.Position;
 			spotlight.position = cam.Position;
 			spotlight.direction = cam.Front.Normalized();
@@ -89,15 +93,17 @@ namespace OpenTK_Test
 			Matrix4 view = cam.GetViewMatrix();
 			Matrix4 proj = cam.GetProjectionMatrix();
 			Matrix4 modelMatrix = Matrix4.CreateScale(0.1f);
-
 			shader.SetMatrix4("viewMatrix", view);
 			shader.SetMatrix4("projMatrix", proj);
 			shader.SetMatrix4("modelMatrix", modelMatrix);
 			shader.SetVec3("cameraPos", cam.Position);
+
 			GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
+
 			directionalLight.Set(shader, 0);
 			pointLight.Set(shader, 0);
 			spotlight.Set(shader, 0);
+
 			model.Draw(shader);
 
 			//GL.DepthFunc(DepthFunction.Lequal);
