@@ -26,11 +26,15 @@ namespace OpenTK_Test
 		Model model;
 
 		Camera cam;
-		Shader shader;
+		Shader shader, depthShader;
 		Vector2 lastPos;
 		PointLight pointLight;
 		DirectionalLight directionalLight;
 		Spotlight spotlight;
+
+		int SHADOW_WIDTH = 1024, SHADOW_HEIGHT = 1024;
+		int depthMapFBO;
+		int depthCubemap;
 
 		string[] skyboxFaces =
 		{
@@ -52,10 +56,33 @@ namespace OpenTK_Test
 		}
 		protected override void OnLoad(EventArgs e)
 		{
+			//Setup depth framebuffer and cubemap, bind cubemap to depth slot
+			depthMapFBO = GL.GenFramebuffer();
+
+			depthCubemap = GL.GenTexture();
+			GL.BindTexture(TextureTarget.TextureCubeMap, depthCubemap);
+
+			for (int i = 0; i < 6; ++i)
+				GL.TexImage2D(TextureTarget.TextureCubeMapPositiveX + i, 0, PixelInternalFormat.DepthComponent, SHADOW_WIDTH, SHADOW_HEIGHT, 0, PixelFormat.DepthComponent, PixelType.Float, IntPtr.Zero);
+
+			GL.TexParameter(TextureTarget.TextureCubeMap, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Nearest);
+			GL.TexParameter(TextureTarget.TextureCubeMap, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Nearest);
+			GL.TexParameter(TextureTarget.TextureCubeMap, TextureParameterName.TextureWrapS, (int)TextureWrapMode.ClampToEdge);
+			GL.TexParameter(TextureTarget.TextureCubeMap, TextureParameterName.TextureWrapT, (int)TextureWrapMode.ClampToEdge);
+			GL.TexParameter(TextureTarget.TextureCubeMap, TextureParameterName.TextureWrapR, (int)TextureWrapMode.ClampToEdge);
+
+			GL.BindFramebuffer(FramebufferTarget.Framebuffer, depthMapFBO);
+			GL.FramebufferTexture(FramebufferTarget.Framebuffer, FramebufferAttachment.DepthAttachment, depthCubemap, 0);
+			GL.DrawBuffer(DrawBufferMode.None);
+			GL.ReadBuffer(ReadBufferMode.None);
+			GL.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
+			
 			CursorVisible = false;
 
 			//skybox = new Skybox(skyboxFaces);
 			shader = new Shader("../../shader.vert", "../../shader.frag");
+			depthShader = new Shader("../../depth.vs", "../../depth.fs", "../../depth.gs");
+
 			model = new Model("C:/Users/User/source/repos/OpenTK Test/OpenTK Test/bin/Debug/resources/sponza/sponza.obj");
 
 			cam = new Camera(Vector3.UnitZ * 3);
@@ -84,6 +111,40 @@ namespace OpenTK_Test
 		protected override void OnRenderFrame(FrameEventArgs e)
 		{
 			Title = $"(Vsync: {VSync}) FPS: {1f / e.Time:0}";
+			GL.ClearColor(Color.LightBlue);
+			GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
+
+			float nearPlane = 0.01f;
+			float farPlane = 300f;
+
+			Matrix4 shadowProj = Matrix4.CreatePerspectiveFieldOfView(MathHelper.DegreesToRadians(90), (float)SHADOW_WIDTH / SHADOW_HEIGHT, nearPlane, farPlane);
+			Vector3 lightPos = pointLight.position;
+			Matrix4[] shadowTransforms = new Matrix4[]
+			{
+				shadowProj * Matrix4.LookAt(lightPos, lightPos + new Vector3( 1.0f,  0.0f,  0.0f), new Vector3(0.0f, -1.0f,  0.0f)),
+				shadowProj * Matrix4.LookAt(lightPos, lightPos + new Vector3(-1.0f, 0.0f, 0.0f), new Vector3(0.0f, -1.0f, 0.0f)),
+				shadowProj * Matrix4.LookAt(lightPos, lightPos + new Vector3(0.0f, 1.0f, 0.0f), new Vector3(0.0f, 0.0f, 1.0f)),
+				shadowProj * Matrix4.LookAt(lightPos, lightPos + new Vector3(0.0f, -1.0f, 0.0f), new Vector3(0.0f, 0.0f, -1.0f)),
+				shadowProj * Matrix4.LookAt(lightPos, lightPos + new Vector3(0.0f, 0.0f, 1.0f), new Vector3(0.0f, -1.0f, 0.0f)),
+				shadowProj * Matrix4.LookAt(lightPos, lightPos + new Vector3(0.0f, 0.0f, -1.0f), new Vector3(0.0f, -1.0f, 0.0f))
+			};
+
+			GL.Viewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
+			GL.BindFramebuffer(FramebufferTarget.Framebuffer, depthMapFBO);
+			GL.Clear(ClearBufferMask.DepthBufferBit);
+			depthShader.Use();
+
+			for (int i = 0; i < 6; ++i)
+			{
+				depthShader.SetMatrix4("shadowMatrices[" + i + "]", shadowTransforms[i]);
+			}
+			depthShader.SetFloat("far_plane", farPlane);
+			depthShader.SetVec3("lightPos", lightPos);
+			model.Draw(depthShader);
+
+			GL.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
+
+			///
 
 			//pointLight.position = cam.Position;
 			spotlight.position = cam.Position;
@@ -98,11 +159,12 @@ namespace OpenTK_Test
 			shader.SetMatrix4("modelMatrix", modelMatrix);
 			shader.SetVec3("cameraPos", cam.Position);
 
-			GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
 			directionalLight.Set(shader, 0);
 			pointLight.Set(shader, 0);
 			spotlight.Set(shader, 0);
+			GL.ActiveTexture(TextureUnit.Texture0);
+			GL.BindTexture(TextureTarget.TextureCubeMap, depthCubemap);
 
 			model.Draw(shader);
 
