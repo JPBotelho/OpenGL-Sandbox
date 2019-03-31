@@ -39,9 +39,9 @@ struct Spotlight
 #define NR_POINT_LIGHTS 1
 
 
-/*in vec2 TexCoords;
+in vec2 TexCoords;
 in vec3 FragPos;
-in vec3 Normals;*/
+in vec3 Normals;
 
 uniform sampler2D texture_diffuse1;
 uniform sampler2D texture_specular1;
@@ -59,7 +59,6 @@ float materialshininess= 32.0f;
 
 void main()
 {  
-	FragColor = vec4(1);/*
 	vec3 norm = normalize(Normals);
     vec3 viewDir = normalize(cameraPos - FragPos);
 
@@ -73,10 +72,10 @@ void main()
     FragColor = vec4(min(result, 1), 1.0);
 
 	if(texture(texture_diffuse1, TexCoords).a < 0.5)
-		discard;*/
+		discard;
 }
 
-/*vec3 CalcDirLight(DirectionalLight light, vec3 normal, vec3 viewDir)
+vec3 CalcDirLight(DirectionalLight light, vec3 normal, vec3 viewDir)
 {
     vec3 lightDir = normalize(-light.direction);
     // diffuse shading
@@ -135,4 +134,4 @@ vec3 CalcSpotLight(Spotlight light, vec3 normal, vec3 fragPos, vec3 viewDir)
     diffuse *= attenuation * intensity;
     specular *= attenuation * intensity;
     return (ambient + diffuse + specular);
-}*/
+}

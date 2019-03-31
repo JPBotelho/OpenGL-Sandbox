@@ -26,7 +26,7 @@ namespace OpenTK_Test
 		Model model;
 
 		Camera cam;
-		Shader shader;
+		Shader shader, depthShader;
 		Vector2 lastPos;
 		PointLight pointLight;
 		DirectionalLight directionalLight;
@@ -41,7 +41,9 @@ namespace OpenTK_Test
 			"resources/skybox/front.jpg",
 			"resources/skybox/back.jpg"
 		};
-		
+
+		int shadowWidth = 1024, shadowHeight = 1024;
+		int depthMapFBO;
 		public MainWindow(int width, int height, string title) : base(width, height, GraphicsMode.Default, title) { }
 
 		protected override void OnResize(EventArgs e)
@@ -52,42 +54,87 @@ namespace OpenTK_Test
 		}
 		protected override void OnLoad(EventArgs e)
 		{
+			GL.Enable(EnableCap.DepthTest);
+			GL.Enable(EnableCap.CullFace);
+			CheckLastError();
 			CursorVisible = false;
 
-			//skybox = new Skybox(skyboxFaces);
-			shader = new Shader("shader.vert", "shader.frag", "test.gs");
+			//shader = new Shader("shader.vert", "shader.frag");
+			depthShader = new Shader("depth.vs", "depth.fs", "depth.gs");
 			model = new Model("C:/Users/User/source/repos/OpenTK Test/OpenTK Test/bin/Debug/resources/sponza/sponza.obj");
 
 			cam = new Camera(Vector3.UnitZ * 3);
 			cam.AspectRatio = (float)Width / Height;
 
-			directionalLight = new DirectionalLight();
 			pointLight = new PointLight
 			{
-				position = cam.Position
+				position = new Vector3(0, 1, 3)
 			};
-			spotlight = new Spotlight
+
+			int depthCubemap = GL.GenTexture();
+			GL.BindTexture(TextureTarget.TextureCubeMap, depthCubemap);
+
+			for (int i = 0; i < 6; i++)
 			{
-				position = cam.Position,
-				direction = cam.Position + cam.Front
-			};
+				GL.TexImage2D(TextureTarget.TextureCubeMapPositiveX + i, 0, PixelInternalFormat.DepthComponent, shadowWidth, shadowHeight, 0, PixelFormat.DepthComponent, PixelType.Float, IntPtr.Zero);
+				CheckLastError();
+			}
+			GL.TexParameter(TextureTarget.TextureCubeMap, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Nearest);
+			GL.TexParameter(TextureTarget.TextureCubeMap, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Nearest);
+			GL.TexParameter(TextureTarget.TextureCubeMap, TextureParameterName.TextureWrapS, (int)TextureWrapMode.ClampToEdge);
+			GL.TexParameter(TextureTarget.TextureCubeMap, TextureParameterName.TextureWrapT, (int)TextureWrapMode.ClampToEdge);
+			GL.TexParameter(TextureTarget.TextureCubeMap, TextureParameterName.TextureWrapR, (int)TextureWrapMode.ClampToEdge);
+			
+			depthMapFBO = GL.GenFramebuffer();
+			GL.BindFramebuffer(FramebufferTarget.Framebuffer, depthMapFBO);
+			GL.FramebufferTexture(FramebufferTarget.Framebuffer, FramebufferAttachment.DepthAttachment, depthCubemap, 0);
+			GL.DrawBuffer(DrawBufferMode.None);
+			GL.ReadBuffer(ReadBufferMode.None);
+			GL.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
 
-			GL.Enable(EnableCap.CullFace);
-			GL.CullFace(CullFaceMode.Back);
-
-			GL.Enable(EnableCap.DepthTest);
-			//GL.DepthFunc(DepthFunction.Always);
-			GL.ClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 			base.OnLoad(e);
 		}
 
 		protected override void OnRenderFrame(FrameEventArgs e)
 		{
 			Title = $"(Vsync: {VSync}) FPS: {1f / e.Time:0}";
+			GL.ClearColor(Color.DeepPink);
+			GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
+			
+			GL.Viewport(0, 0, shadowWidth, shadowHeight);
+			GL.BindFramebuffer(FramebufferTarget.Framebuffer, depthMapFBO);
+			GL.Clear(ClearBufferMask.DepthBufferBit);
 
-			//pointLight.position = cam.Position;
-			spotlight.position = cam.Position;
-			spotlight.direction = cam.Front.Normalized();
+			float near_plane = 0.01f;
+			float far_plane = 300f;
+			Vector3 lightPos = new Vector3(0.0f, 1.0f, 3.0f);
+			Matrix4 shadowProj = Matrix4.CreatePerspectiveFieldOfView(MathHelper.DegreesToRadians(90.0f), (float)shadowWidth / shadowHeight, near_plane, far_plane);
+			Matrix4[] shadowTransforms = new Matrix4[]
+			{
+				Matrix4.LookAt(lightPos, lightPos + new Vector3(1.0f, 0.0f, 0.0f), new Vector3(0.0f, -1.0f, 0.0f)) * shadowProj,
+				Matrix4.LookAt(lightPos, lightPos + new Vector3(-1.0f, 0.0f, 0.0f), new Vector3(0.0f, -1.0f, 0.0f)) * shadowProj,
+				Matrix4.LookAt(lightPos, lightPos + new Vector3(0.0f, 1.0f, 0.0f), new Vector3(0.0f, 0.0f, 1.0f)) * shadowProj,
+				Matrix4.LookAt(lightPos, lightPos + new Vector3(0.0f, -1.0f, 0.0f), new Vector3(0.0f, 0.0f, -1.0f)) * shadowProj,
+				Matrix4.LookAt(lightPos, lightPos + new Vector3(0.0f, 0.0f, 1.0f), new Vector3(0.0f, -1.0f, 0.0f)) * shadowProj,
+				Matrix4.LookAt(lightPos, lightPos + new Vector3(0.0f, 0.0f, -1.0f), new Vector3(0.0f, -1.0f, 0.0f)) * shadowProj
+			};
+			
+			depthShader.Use();
+			for (int i = 0; i < 6; ++i)
+				depthShader.SetMatrix4("shadowMatrices[" + i + "]", shadowTransforms[i]);
+			cam.Position = new Vector3(0, 1, 3);
+			Matrix4 view = cam.GetViewMatrix();
+			depthShader.SetVec3("lightPos", lightPos);
+			depthShader.SetFloat("far_plane", far_plane);
+			Matrix4 modelMatrix = Matrix4.CreateScale(0.1f);
+			depthShader.SetMatrix4("modelMatrix", modelMatrix);
+			model.Draw(depthShader);
+
+
+			GL.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
+
+			/*GL.Viewport(0, 0, 800, 600);
+			GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
 			shader.Use();
 			Matrix4 view = cam.GetViewMatrix();
@@ -97,21 +144,19 @@ namespace OpenTK_Test
 			shader.SetMatrix4("projMatrix", proj);
 			shader.SetMatrix4("modelMatrix", modelMatrix);
 			shader.SetVec3("cameraPos", cam.Position);
-
-			GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
-
-			directionalLight.Set(shader, 0);
+			
 			pointLight.Set(shader, 0);
-			spotlight.Set(shader, 0);
 
 			model.Draw(shader);
+			CheckLastError();
 
 			//GL.DepthFunc(DepthFunction.Lequal);
 			//skybox.Draw(view, proj);
-			//GL.DepthFunc(DepthFunction.Less);
+			//GL.DepthFunc(DepthFunction.Less);*/
 
 			Context.SwapBuffers();
-			
+			CheckLastError();
+
 			base.OnRenderFrame(e);
 		}
 
@@ -189,7 +234,8 @@ namespace OpenTK_Test
 		protected override void OnUnload(EventArgs e)
 		{
 			GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
-			shader.Dispose();
+			//shader.Dispose();
+			depthShader.Dispose();
 			//skybox.shader.Dispose();
 			base.OnUnload(e);
 		}

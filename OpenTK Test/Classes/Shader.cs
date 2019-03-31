@@ -42,7 +42,7 @@ namespace OpenTK_Test
 				FragmentShaderSource = reader.ReadToEnd();
 			}
 
-			if(!string.IsNullOrEmpty(geometryPath))
+			//if(!string.IsNullOrEmpty(geometryPath))
 			{
 				string GeometryShaderSource;
 
@@ -87,7 +87,7 @@ namespace OpenTK_Test
 
 			GL.AttachShader(Handle, VertexShader);
 			GL.AttachShader(Handle, FragmentShader);
-			if(string.IsNullOrEmpty(geometryPath))
+			//if(string.IsNullOrEmpty(geometryPath))
 				GL.AttachShader(Handle, GeometryShader);
 			
 			GL.LinkProgram(Handle);

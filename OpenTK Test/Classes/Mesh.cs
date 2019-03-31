@@ -61,7 +61,7 @@ namespace OpenTK_Test
 			uint specularNr = 1;
 			uint normalNr = 1;
 			uint heightNr = 1;
-			for (int i = 0; i < textures.Length; i++)
+			/*for (int i = 0; i < textures.Length; i++)
 			{
 				GL.ActiveTexture(TextureUnit.Texture0 + i); // active proper texture unit before binding
 												  // retrieve texture number (the N in diffuse_textureN)
@@ -80,7 +80,7 @@ namespace OpenTK_Test
 				GL.Uniform1(GL.GetUniformLocation(shader.Handle, (name + number)), i);
 				// and finally bind the texture
 				GL.BindTexture(TextureTarget.Texture2D, textures[i].id);
-			}
+			}*/
 
 			GL.ActiveTexture(TextureUnit.Texture0);
 
