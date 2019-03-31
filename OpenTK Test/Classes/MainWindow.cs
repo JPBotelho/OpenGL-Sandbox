@@ -31,7 +31,7 @@ namespace OpenTK_Test
 		PointLight pointLight;
 		DirectionalLight directionalLight;
 		Spotlight spotlight;
-
+		Matrix4 shadowProj;
 		string[] skyboxFaces =
 		{
 			"resources/skybox/right.jpg",
@@ -43,7 +43,7 @@ namespace OpenTK_Test
 		};
 
 		int shadowWidth = 1024, shadowHeight = 1024;
-		int depthMapFBO;
+		int depthMapFBO, depthCubemap;
 		public MainWindow(int width, int height, string title) : base(width, height, GraphicsMode.Default, title) { }
 
 		protected override void OnResize(EventArgs e)
@@ -54,6 +54,7 @@ namespace OpenTK_Test
 		}
 		protected override void OnLoad(EventArgs e)
 		{
+			shadowProj = Matrix4.CreatePerspectiveFieldOfView(MathHelper.DegreesToRadians(90.0f), (float)shadowWidth / shadowHeight, 0.01f, 300f);
 			GL.Enable(EnableCap.DepthTest);
 			GL.Enable(EnableCap.CullFace);
 			CheckLastError();
@@ -71,12 +72,12 @@ namespace OpenTK_Test
 				position = new Vector3(0, 1, 3)
 			};
 
-			int depthCubemap = GL.GenTexture();
+			depthCubemap = GL.GenTexture();
 			GL.BindTexture(TextureTarget.TextureCubeMap, depthCubemap);
 
 			for (int i = 0; i < 6; i++)
 			{
-				GL.TexImage2D(TextureTarget.TextureCubeMapPositiveX + i, 0, PixelInternalFormat.DepthComponent, shadowWidth, shadowHeight, 0, PixelFormat.DepthComponent, PixelType.Float, IntPtr.Zero);
+				GL.TexImage2D(TextureTarget.TextureCubeMapPositiveX + i, 0, PixelInternalFormat.DepthComponent32f, shadowWidth, shadowHeight, 0, PixelFormat.DepthComponent, PixelType.Float, IntPtr.Zero);
 				CheckLastError();
 			}
 			GL.TexParameter(TextureTarget.TextureCubeMap, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Nearest);
@@ -108,7 +109,7 @@ namespace OpenTK_Test
 			float near_plane = 0.01f;
 			float far_plane = 300f;
 			Vector3 lightPos = new Vector3(0.0f, 1.0f, 3.0f);
-			Matrix4 shadowProj = Matrix4.CreatePerspectiveFieldOfView(MathHelper.DegreesToRadians(90.0f), (float)shadowWidth / shadowHeight, near_plane, far_plane);
+			
 			Matrix4[] shadowTransforms = new Matrix4[]
 			{
 				Matrix4.LookAt(lightPos, lightPos + new Vector3(1.0f, 0.0f, 0.0f), new Vector3(0.0f, -1.0f, 0.0f)) * shadowProj,
@@ -126,7 +127,13 @@ namespace OpenTK_Test
 			depthShader.SetFloat("far_plane", far_plane);
 			Matrix4 modelMatrix = Matrix4.CreateScale(0.1f);
 			depthShader.SetMatrix4("modelMatrix", modelMatrix);
+			//GL.Enable(EnableCap.PolygonOffsetFill);
+			GL.Enable(EnableCap.PolygonOffsetFill);
+			GL.PolygonOffset(1.1f, 1.5f);
 			model.Draw(depthShader);
+			GL.Disable(EnableCap.PolygonOffsetFill);
+			//GL.Disable(EnableCap.PolygonOffsetFill);
+
 
 
 			GL.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
@@ -135,12 +142,16 @@ namespace OpenTK_Test
 			GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
 			shader.Use();
-
+			GL.ActiveTexture(TextureUnit.Texture7);
+			GL.BindTexture(TextureTarget.TextureCubeMap, depthCubemap);
+			shader.SetInt("depthMap", 7);
 			Matrix4 view = cam.GetViewMatrix();
 			Matrix4 proj = cam.GetProjectionMatrix();
+			shader.SetMatrix4("cubeProjMatrix", shadowProj);
 			shader.SetMatrix4("viewMatrix", view);
 			shader.SetMatrix4("projMatrix", proj);
 			shader.SetMatrix4("modelMatrix", modelMatrix);
+
 			shader.SetVec3("cameraPos", cam.Position);
 			
 			pointLight.Set(shader, 0);
