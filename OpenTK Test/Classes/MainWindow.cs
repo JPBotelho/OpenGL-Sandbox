@@ -55,7 +55,7 @@ namespace OpenTK_Test
 			CursorVisible = false;
 
 			//skybox = new Skybox(skyboxFaces);
-			shader = new Shader("../../shader.vert", "../../shader.frag");
+			shader = new Shader("shader.vert", "shader.frag", "test.gs");
 			model = new Model("C:/Users/User/source/repos/OpenTK Test/OpenTK Test/bin/Debug/resources/sponza/sponza.obj");
 
 			cam = new Camera(Vector3.UnitZ * 3);

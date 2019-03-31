@@ -173,12 +173,16 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <None Include="depth.fs" />
+    <None Include="depth.gs" />
+    <None Include="depth.vs" />
     <None Include="OpenTK.dll.config" />
     <None Include="packages.config" />
     <None Include="shader.frag" />
     <None Include="shader.vert" />
     <None Include="skybox.fs" />
     <None Include="skybox.vs" />
+    <None Include="test.gs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\packages\AssimpNet.4.1.0\build\AssimpNet.targets" Condition="Exists('..\packages\AssimpNet.4.1.0\build\AssimpNet.targets')" />
