@@ -56,22 +56,6 @@ namespace OpenTK_Test
 			int index = path.LastIndexOf("/");
 			directory = path.Substring(0, index);
 
-			/*List<string> paths = new List<string>();
-			int test = 0;
-			foreach (Material mat in scene.Materials)
-			{
-				foreach (TextureSlot slot in mat.GetAllMaterialTextures())
-				{
-					if (!paths.Contains(slot.FilePath))
-					{
-						Console.WriteLine(slot.TextureType + " -- " + slot.FilePath);
-						paths.Add(slot.FilePath);
-						test++;
-					}
-				}
-			}
-			Console.WriteLine(test);*/
-
 			ProcessNode(scene.RootNode, scene);
 		}
 

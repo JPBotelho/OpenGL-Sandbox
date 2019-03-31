@@ -59,7 +59,7 @@ namespace OpenTK_Test
 			CheckLastError();
 			CursorVisible = false;
 
-			//shader = new Shader("shader.vert", "shader.frag");
+			shader = new Shader("shader.vert", "shader.frag");
 			depthShader = new Shader("depth.vs", "depth.fs", "depth.gs");
 			model = new Model("C:/Users/User/source/repos/OpenTK Test/OpenTK Test/bin/Debug/resources/sponza/sponza.obj");
 
@@ -122,8 +122,6 @@ namespace OpenTK_Test
 			depthShader.Use();
 			for (int i = 0; i < 6; ++i)
 				depthShader.SetMatrix4("shadowMatrices[" + i + "]", shadowTransforms[i]);
-			cam.Position = new Vector3(0, 1, 3);
-			Matrix4 view = cam.GetViewMatrix();
 			depthShader.SetVec3("lightPos", lightPos);
 			depthShader.SetFloat("far_plane", far_plane);
 			Matrix4 modelMatrix = Matrix4.CreateScale(0.1f);
@@ -133,13 +131,13 @@ namespace OpenTK_Test
 
 			GL.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
 
-			/*GL.Viewport(0, 0, 800, 600);
+			GL.Viewport(0, 0, 800, 600);
 			GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
 			shader.Use();
+
 			Matrix4 view = cam.GetViewMatrix();
 			Matrix4 proj = cam.GetProjectionMatrix();
-			Matrix4 modelMatrix = Matrix4.CreateScale(0.1f);
 			shader.SetMatrix4("viewMatrix", view);
 			shader.SetMatrix4("projMatrix", proj);
 			shader.SetMatrix4("modelMatrix", modelMatrix);
@@ -152,7 +150,7 @@ namespace OpenTK_Test
 
 			//GL.DepthFunc(DepthFunction.Lequal);
 			//skybox.Draw(view, proj);
-			//GL.DepthFunc(DepthFunction.Less);*/
+			//GL.DepthFunc(DepthFunction.Less);
 
 			Context.SwapBuffers();
 			CheckLastError();
@@ -234,7 +232,7 @@ namespace OpenTK_Test
 		protected override void OnUnload(EventArgs e)
 		{
 			GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
-			//shader.Dispose();
+			shader.Dispose();
 			depthShader.Dispose();
 			//skybox.shader.Dispose();
 			base.OnUnload(e);
