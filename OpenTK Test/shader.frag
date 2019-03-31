@@ -58,7 +58,7 @@ float materialshininess= 32.0f;
 
 uniform samplerCube depthMap;
 uniform mat4 cubeProjMatrix;
-
+ 
 float chebyshevNorm(in vec3 dir)
 {
     vec3 tmp = abs(dir);
@@ -71,7 +71,7 @@ void main()
     vec3 viewDir = normalize(cameraPos - FragPos);
 	vec3 result = CalcPointLight(pointLights[0], norm, FragPos, viewDir);
 
-	vec3 fragToLight = FragPos - vec3(0, 1, 3); 
+	vec3 fragToLight = FragPos - pointLights[0].position; 
 	float closestDepth = texture(depthMap, fragToLight).r;
 
     float lightChebyshev = -chebyshevNorm(fragToLight); // linear depth

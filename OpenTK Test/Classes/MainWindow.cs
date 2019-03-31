@@ -54,6 +54,7 @@ namespace OpenTK_Test
 		}
 		protected override void OnLoad(EventArgs e)
 		{
+			skybox = new Skybox(skyboxFaces);
 			shadowProj = Matrix4.CreatePerspectiveFieldOfView(MathHelper.DegreesToRadians(90.0f), (float)shadowWidth / shadowHeight, 0.01f, 300f);
 			GL.Enable(EnableCap.DepthTest);
 			GL.Enable(EnableCap.CullFace);
@@ -69,7 +70,7 @@ namespace OpenTK_Test
 
 			pointLight = new PointLight
 			{
-				position = new Vector3(0, 1, 3)
+				position = new Vector3(0, 5, 3)
 			};
 
 			depthCubemap = GL.GenTexture();
@@ -108,7 +109,7 @@ namespace OpenTK_Test
 
 			float near_plane = 0.01f;
 			float far_plane = 300f;
-			Vector3 lightPos = new Vector3(0.0f, 1.0f, 3.0f);
+			Vector3 lightPos = pointLight.position;
 			
 			Matrix4[] shadowTransforms = new Matrix4[]
 			{
@@ -138,7 +139,7 @@ namespace OpenTK_Test
 
 			GL.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
 
-			GL.Viewport(0, 0, 800, 600);
+			GL.Viewport(0, 0, Width, Height);
 			GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
 			shader.Use();
@@ -159,10 +160,9 @@ namespace OpenTK_Test
 			model.Draw(shader);
 			CheckLastError();
 
-			//GL.DepthFunc(DepthFunction.Lequal);
-			//skybox.Draw(view, proj);
-			//GL.DepthFunc(DepthFunction.Less);
-
+			GL.DepthFunc(DepthFunction.Lequal);
+			skybox.Draw(view, proj);
+			GL.DepthFunc(DepthFunction.Less);
 			Context.SwapBuffers();
 			CheckLastError();
 
