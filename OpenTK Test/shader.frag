@@ -90,8 +90,8 @@ void main()
 	vec3 result = CalcPointLight(pointLights[0], norm, FragPos, viewDir);
 
 	vec3 fragToLight = FragPos - pointLights[0].position; 
+	float closestDepth = texture(depthMap, fragToLight).r;
 
-	//
 
 	float shadow = 0.0;
     float bias = 0.000005;

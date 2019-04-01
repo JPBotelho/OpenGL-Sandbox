@@ -44,7 +44,7 @@ namespace OpenTK_Test
 
 		int shadowWidth = 2048*2, shadowHeight = 2048*2;
 		int depthMapFBO, depthCubemap;
-		public MainWindow(int width, int height, string title) : base(width, height, GraphicsMode.Default, title) { }
+		public MainWindow(int width, int height, GraphicsMode mode, string title) : base(width, height, mode, title) { }
 
 		protected override void OnResize(EventArgs e)
 		{
@@ -54,6 +54,7 @@ namespace OpenTK_Test
 		}
 		protected override void OnLoad(EventArgs e)
 		{
+			VSync = VSyncMode.Off;
 			//skybox = new Skybox(skyboxFaces);
 			shadowProj = Matrix4.CreatePerspectiveFieldOfView(MathHelper.DegreesToRadians(90.0f), (float)shadowWidth / shadowHeight, 0.01f, 300f);
 			GL.Enable(EnableCap.DepthTest);
