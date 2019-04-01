@@ -58,11 +58,29 @@ float materialshininess= 32.0f;
 
 uniform samplerCube depthMap;
 uniform mat4 cubeProjMatrix;
+
+vec3 gridSamplingDisk[20] = vec3[]
+(
+   vec3(1, 1,  0), vec3( 1, -1,  0), vec3(-1, -1,  0), vec3(-1, 1,  0), 
+   vec3(1, 1, -0), vec3( 1, -1, -0), vec3(-1, -1, -0), vec3(-1, 1, -0),
+   vec3(1, 1,  0), vec3( 1, -1,  0), vec3(-1, -1,  0), vec3(-1, 1,  0),
+   vec3(1, 0,  0), vec3(-1,  0,  0), vec3( 1,  0, -0), vec3(-1, 0, -0),
+   vec3(0, 1,  0), vec3( 0, -1,  0), vec3( 0, -1, -0), vec3( 0, 1, -0)
+);
  
 float chebyshevNorm(in vec3 dir)
 {
     vec3 tmp = abs(dir);
     return max(max(tmp.x,tmp.y),tmp.z);
+}
+
+float getCurrentDepth(vec3 fragToLight)
+{
+	float lightChebyshev = -chebyshevNorm(fragToLight); // linear depth
+	vec4 postProjPos = vec4(0.0,0.0,lightChebyshev,1.0) * cubeProjMatrix;
+	float NDC_z = postProjPos.z/postProjPos.w;
+	float Window_z = NDC_z*0.5+0.5;
+	return Window_z;
 }
 
 void main()
@@ -74,12 +92,25 @@ void main()
 	vec3 fragToLight = FragPos - pointLights[0].position; 
 	float closestDepth = texture(depthMap, fragToLight).r;
 
-    float lightChebyshev = -chebyshevNorm(fragToLight); // linear depth
-	vec4 postProjPos = vec4(0.0,0.0,lightChebyshev,1.0) * cubeProjMatrix;
-	float NDC_z = postProjPos.z/postProjPos.w;
-	float Window_z = NDC_z*0.5+0.5;
-	float shadow = (Window_z < closestDepth ? 1 : 0);
+	//
+
+	float shadow = 0.0;
+    int samples = 20;
+    float diskRadius = .05;
+    for(int i = 0; i < samples; ++i)
+    {
+        float closestDepth = texture(depthMap, fragToLight + gridSamplingDisk[i] * diskRadius).r;
+        if(getCurrentDepth(fragToLight) - 0 < closestDepth)
+            shadow += 1.0;
+    }
+    shadow = float(shadow) / float(samples);
+
+	//shadow = getCurrentDepth(fragToLight) < closestDepth ? 1 : 0;
+	
 	FragColor = vec4(result.xyz * shadow, 1);
+	if(texture(texture_diffuse1, TexCoords).a < 0.5)
+		discard;
+
 }
 
 

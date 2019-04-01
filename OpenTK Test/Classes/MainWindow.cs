@@ -42,7 +42,7 @@ namespace OpenTK_Test
 			"resources/skybox/back.jpg"
 		};
 
-		int shadowWidth = 1024, shadowHeight = 1024;
+		int shadowWidth = 2048, shadowHeight = 2048;
 		int depthMapFBO, depthCubemap;
 		public MainWindow(int width, int height, string title) : base(width, height, GraphicsMode.Default, title) { }
 
@@ -54,7 +54,7 @@ namespace OpenTK_Test
 		}
 		protected override void OnLoad(EventArgs e)
 		{
-			skybox = new Skybox(skyboxFaces);
+			//skybox = new Skybox(skyboxFaces);
 			shadowProj = Matrix4.CreatePerspectiveFieldOfView(MathHelper.DegreesToRadians(90.0f), (float)shadowWidth / shadowHeight, 0.01f, 300f);
 			GL.Enable(EnableCap.DepthTest);
 			GL.Enable(EnableCap.CullFace);
@@ -160,9 +160,9 @@ namespace OpenTK_Test
 			model.Draw(shader);
 			CheckLastError();
 
-			GL.DepthFunc(DepthFunction.Lequal);
-			skybox.Draw(view, proj);
-			GL.DepthFunc(DepthFunction.Less);
+			//GL.DepthFunc(DepthFunction.Lequal);
+			//skybox.Draw(view, proj);
+			//GL.DepthFunc(DepthFunction.Less);
 			Context.SwapBuffers();
 			CheckLastError();
 
@@ -245,7 +245,7 @@ namespace OpenTK_Test
 			GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
 			shader.Dispose();
 			depthShader.Dispose();
-			skybox.shader.Dispose();
+			//skybox.shader.Dispose();
 			base.OnUnload(e);
 		}
 
