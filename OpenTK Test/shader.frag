@@ -109,7 +109,7 @@ void main()
 
 	//shadow = getCurrentDepth(fragToLight) < closestDepth ? 1 : 0;
 	
-	FragColor = vec4(shadow * result, 1);
+	FragColor = vec4(max(0.35,shadow) * result, 1);
 	if(texture(texture_diffuse1, TexCoords).a < 0.5)
 		discard;
 

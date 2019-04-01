@@ -42,7 +42,7 @@ namespace OpenTK_Test
 			"resources/skybox/back.jpg"
 		};
 
-		int shadowWidth = 2048, shadowHeight = 2048;
+		int shadowWidth = 2048*2, shadowHeight = 2048*2;
 		int depthMapFBO, depthCubemap;
 		public MainWindow(int width, int height, string title) : base(width, height, GraphicsMode.Default, title) { }
 
