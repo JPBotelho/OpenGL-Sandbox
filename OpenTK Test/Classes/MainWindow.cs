@@ -245,7 +245,7 @@ namespace OpenTK_Test
 			GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
 			shader.Dispose();
 			depthShader.Dispose();
-			//skybox.shader.Dispose();
+			skybox.shader.Dispose();
 			base.OnUnload(e);
 		}
 
