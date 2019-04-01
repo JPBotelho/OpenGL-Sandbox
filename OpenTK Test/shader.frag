@@ -61,11 +61,11 @@ uniform mat4 cubeProjMatrix;
 
 vec3 gridSamplingDisk[20] = vec3[]
 (
-   vec3(1, 1,  0), vec3( 1, -1,  0), vec3(-1, -1,  0), vec3(-1, 1,  0), 
-   vec3(1, 1, -0), vec3( 1, -1, -0), vec3(-1, -1, -0), vec3(-1, 1, -0),
+   vec3(1, 1,  1), vec3( 1, -1,  1), vec3(-1, -1,  1), vec3(-1, 1,  1), 
+   vec3(1, 1, -1), vec3( 1, -1, -1), vec3(-1, -1, -1), vec3(-1, 1, -1),
    vec3(1, 1,  0), vec3( 1, -1,  0), vec3(-1, -1,  0), vec3(-1, 1,  0),
-   vec3(1, 0,  0), vec3(-1,  0,  0), vec3( 1,  0, -0), vec3(-1, 0, -0),
-   vec3(0, 1,  0), vec3( 0, -1,  0), vec3( 0, -1, -0), vec3( 0, 1, -0)
+   vec3(1, 0,  1), vec3(-1,  0,  1), vec3( 1,  0, -1), vec3(-1, 0, -1),
+   vec3(0, 1,  1), vec3( 0, -1,  1), vec3( 0, -1, -1), vec3( 0, 1, -1)
 );
  
 float chebyshevNorm(in vec3 dir)
@@ -77,10 +77,10 @@ float chebyshevNorm(in vec3 dir)
 float getCurrentDepth(vec3 fragToLight)
 {
 	float lightChebyshev = -chebyshevNorm(fragToLight); // linear depth
-	vec4 postProjPos = vec4(0.0,0.0,lightChebyshev,1.0) * cubeProjMatrix;
-	float NDC_z = postProjPos.z/postProjPos.w;
-	float Window_z = NDC_z*0.5+0.5;
-	return Window_z;
+	vec4 postProjPos = vec4(fragToLight.xy, lightChebyshev,1.0) * cubeProjMatrix;
+	float NDC = postProjPos.z/postProjPos.w;
+	float Window = NDC*0.5+0.5;
+	return Window;
 }
 
 void main()
@@ -90,24 +90,26 @@ void main()
 	vec3 result = CalcPointLight(pointLights[0], norm, FragPos, viewDir);
 
 	vec3 fragToLight = FragPos - pointLights[0].position; 
-	float closestDepth = texture(depthMap, fragToLight).r;
 
 	//
 
 	float shadow = 0.0;
+    float bias = 0.000005;
     int samples = 20;
-    float diskRadius = .05;
+    float viewDistance = length(cameraPos - FragPos);
+    float diskRadius = (1.0 + (viewDistance / 300)) / 25.0;
     for(int i = 0; i < samples; ++i)
     {
         float closestDepth = texture(depthMap, fragToLight + gridSamplingDisk[i] * diskRadius).r;
-        if(getCurrentDepth(fragToLight) - 0 < closestDepth)
+        //closestDepth *= far_plane;   // undo mapping [0;1]
+        if(getCurrentDepth(fragToLight) - bias < closestDepth)
             shadow += 1.0;
     }
-    shadow = float(shadow) / float(samples);
+    shadow /= float(samples);
 
 	//shadow = getCurrentDepth(fragToLight) < closestDepth ? 1 : 0;
 	
-	FragColor = vec4(result.xyz * shadow, 1);
+	FragColor = vec4(shadow * result, 1);
 	if(texture(texture_diffuse1, TexCoords).a < 0.5)
 		discard;
 
