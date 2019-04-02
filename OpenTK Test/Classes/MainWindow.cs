@@ -28,9 +28,41 @@ namespace OpenTK_Test
 		Camera cam;
 		Shader shader, depthShader;
 		Vector2 lastPos;
-		PointLight pointLight;
-		DirectionalLight directionalLight;
-		Spotlight spotlight;
+		PointLight[] pointLights = new PointLight[]
+		{
+			new PointLight()
+			{
+				position = new Vector3(0, 1, 0)
+			}/*,
+			new PointLight()
+			{
+				position = new Vector3(111, 17, -41),
+				ambient = new Vector3(0, 229f/255, 1),
+				diffuse = new Vector3(0, 229f/255, 1),
+				specular = new Vector3(0, 229f/255, 1)
+			},
+			new PointLight()
+			{
+				position = new Vector3(111, 17, 41),
+				ambient = new Vector3(246f/255, 0, 1),
+				diffuse = new Vector3(246f/255, 0, 1),
+				specular = new Vector3(246f/255, 0, 1)
+			},
+			new PointLight()
+			{
+				position = new Vector3(-111, 17, 41),
+				ambient = new Vector3(0, 1, 110f/255),
+				diffuse = new Vector3(0, 1, 1f/255),
+				specular = new Vector3(0, 1, 1f/255)
+			},
+			new PointLight()
+			{
+				position = new Vector3(-111, 17, -41),
+				ambient = new Vector3(1, 178f/255, 0),
+				diffuse = new Vector3(1, 178f/255, 0),
+				specular = new Vector3(1, 178f/255, 0)
+			}*/
+		};
 		Matrix4 shadowProj;
 		string[] skyboxFaces =
 		{
@@ -56,7 +88,7 @@ namespace OpenTK_Test
 		{
 			VSync = VSyncMode.Off;
 			//skybox = new Skybox(skyboxFaces);
-			shadowProj = Matrix4.CreatePerspectiveFieldOfView(MathHelper.DegreesToRadians(90.0f), (float)shadowWidth / shadowHeight, 0.01f, 300f);
+			shadowProj = Matrix4.CreatePerspectiveFieldOfView(MathHelper.DegreesToRadians(90.0f), (float)shadowWidth / shadowHeight, 0.1f, 300f);
 			GL.Enable(EnableCap.DepthTest);
 			GL.Enable(EnableCap.CullFace);
 			CheckLastError();
@@ -69,10 +101,6 @@ namespace OpenTK_Test
 			cam = new Camera(Vector3.UnitZ * 3);
 			cam.AspectRatio = (float)Width / Height;
 
-			pointLight = new PointLight
-			{
-				position = new Vector3(0, 5, 3)
-			};
 
 			depthCubemap = GL.GenTexture();
 			GL.BindTexture(TextureTarget.TextureCubeMap, depthCubemap);
@@ -82,8 +110,8 @@ namespace OpenTK_Test
 				GL.TexImage2D(TextureTarget.TextureCubeMapPositiveX + i, 0, PixelInternalFormat.DepthComponent32f, shadowWidth, shadowHeight, 0, PixelFormat.DepthComponent, PixelType.Float, IntPtr.Zero);
 				CheckLastError();
 			}
-			GL.TexParameter(TextureTarget.TextureCubeMap, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Nearest);
-			GL.TexParameter(TextureTarget.TextureCubeMap, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Nearest);
+			GL.TexParameter(TextureTarget.TextureCubeMap, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear);
+			GL.TexParameter(TextureTarget.TextureCubeMap, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Linear);
 			GL.TexParameter(TextureTarget.TextureCubeMap, TextureParameterName.TextureWrapS, (int)TextureWrapMode.ClampToEdge);
 			GL.TexParameter(TextureTarget.TextureCubeMap, TextureParameterName.TextureWrapT, (int)TextureWrapMode.ClampToEdge);
 			GL.TexParameter(TextureTarget.TextureCubeMap, TextureParameterName.TextureWrapR, (int)TextureWrapMode.ClampToEdge);
@@ -108,9 +136,9 @@ namespace OpenTK_Test
 			GL.BindFramebuffer(FramebufferTarget.Framebuffer, depthMapFBO);
 			GL.Clear(ClearBufferMask.DepthBufferBit);
 
-			float near_plane = 0.01f;
+			float near_plane = 0.1f;
 			float far_plane = 300f;
-			Vector3 lightPos = pointLight.position;
+			Vector3 lightPos = pointLights[0].position;
 			
 			Matrix4[] shadowTransforms = new Matrix4[]
 			{
@@ -156,7 +184,11 @@ namespace OpenTK_Test
 
 			shader.SetVec3("cameraPos", cam.Position);
 			
-			pointLight.Set(shader, 0);
+			for(int i = 0; i < pointLights.Length; i++)
+			{
+				pointLights[i].Set(shader, i);
+			}
+			//pointLight.Set(shader, 0);
 
 			model.Draw(shader);
 			CheckLastError();
@@ -166,7 +198,6 @@ namespace OpenTK_Test
 			//GL.DepthFunc(DepthFunction.Less);
 			Context.SwapBuffers();
 			CheckLastError();
-
 			base.OnRenderFrame(e);
 		}
 
@@ -178,10 +209,16 @@ namespace OpenTK_Test
 
 		private void HandleKeyboard(FrameEventArgs e)
 		{
+			var input = Keyboard.GetState();
+
 			if (Focused)
 			{
+				if (input.IsKeyDown(Key.ControlLeft))
+					CursorVisible = !CursorVisible;
+			}
+			if (Focused && !CursorVisible)
+			{
 				float deltatime = (float)(1f / e.Time);
-				var input = Keyboard.GetState();
 
 				if (input.IsKeyDown(Key.Escape))
 					Exit();
@@ -196,13 +233,12 @@ namespace OpenTK_Test
 				if (input.IsKeyDown(Key.Space))
 					cam.Position += cam.Up * cam.Speed * (float)e.Time; //Up 
 				if (input.IsKeyDown(Key.LShift))
-					cam.Position -= cam.Up * cam.Speed * (float)e.Time; //Down
+					cam.Position -= cam.Up * cam.Speed * (float)e.Time; //Down				
 			}
 
-			if (Focused)
+			if (Focused && !CursorVisible)
 			{
 				MouseState mouse = Mouse.GetState();
-
 				if (firstMove) // this bool variable is initially set to true
 				{
 					lastPos = new Vector2(mouse.X, mouse.Y);
@@ -224,7 +260,7 @@ namespace OpenTK_Test
 
 		protected override void OnMouseMove(MouseMoveEventArgs e)
 		{
-			if(Focused)
+			if(Focused && !CursorVisible)
 				Mouse.SetPosition(X + Width / 2f, Y + Height / 2f);
 
 			base.OnMouseMove(e);

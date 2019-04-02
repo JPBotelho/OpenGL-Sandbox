@@ -87,7 +87,10 @@ void main()
 {  
 	vec3 norm = normalize(Normals);
     vec3 viewDir = normalize(cameraPos - FragPos);
-	vec3 result = CalcPointLight(pointLights[0], norm, FragPos, viewDir);
+	vec3 result = vec3(0);
+	for(int i = 0; i < NR_POINT_LIGHTS; i++)
+		result += CalcPointLight(pointLights[i], norm, FragPos, viewDir);
+	//vec3 result = CalcPointLight(pointLights[0], norm, FragPos, viewDir);
 
 	vec3 fragToLight = FragPos - pointLights[0].position; 
 	float closestDepth = texture(depthMap, fragToLight).r;
