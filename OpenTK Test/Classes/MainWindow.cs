@@ -32,7 +32,7 @@ namespace OpenTK_Test
 		{
 			new PointLight()
 			{
-				position = new Vector3(0, 1, 0)
+				position = new Vector3(0, 4, 0)
 			}/*,
 			new PointLight()
 			{
@@ -74,6 +74,8 @@ namespace OpenTK_Test
 			"resources/skybox/back.jpg"
 		};
 
+		private DateTime startTime;
+
 		int shadowWidth = 2048*2, shadowHeight = 2048*2;
 		int depthMapFBO, depthCubemap;
 		public MainWindow(int width, int height, GraphicsMode mode, string title) : base(width, height, mode, title) { }
@@ -86,6 +88,7 @@ namespace OpenTK_Test
 		}
 		protected override void OnLoad(EventArgs e)
 		{
+			startTime = DateTime.Now;
 			VSync = VSyncMode.Off;
 			//skybox = new Skybox(skyboxFaces);
 			shadowProj = Matrix4.CreatePerspectiveFieldOfView(MathHelper.DegreesToRadians(90.0f), (float)shadowWidth / shadowHeight, 0.1f, 300f);
@@ -138,6 +141,9 @@ namespace OpenTK_Test
 
 			float near_plane = 0.1f;
 			float far_plane = 300f;
+			//Console.WriteLine(cam.Position);
+			pointLights[0].position.X = (float)Math.Sin((DateTime.Now - startTime).TotalSeconds / 3f) * 70;
+			Console.WriteLine(pointLights[0].position);
 			Vector3 lightPos = pointLights[0].position;
 			
 			Matrix4[] shadowTransforms = new Matrix4[]
@@ -181,7 +187,6 @@ namespace OpenTK_Test
 			shader.SetMatrix4("viewMatrix", view);
 			shader.SetMatrix4("projMatrix", proj);
 			shader.SetMatrix4("modelMatrix", modelMatrix);
-
 			shader.SetVec3("cameraPos", cam.Position);
 			
 			for(int i = 0; i < pointLights.Length; i++)

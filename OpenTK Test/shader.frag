@@ -97,7 +97,7 @@ void main()
 
 
 	float shadow = 0.0;
-    float bias = 0.000005;
+    /*float bias = 0.000005;
     int samples = 20;
     float viewDistance = length(cameraPos - FragPos);
     float diskRadius = (1.0 + (viewDistance / 300)) / 25.0;
@@ -108,9 +108,9 @@ void main()
         if(getCurrentDepth(fragToLight) - bias < closestDepth)
             shadow += 1.0;
     }
-    shadow /= float(samples);
+    shadow /= float(samples);*/
 
-	//shadow = getCurrentDepth(fragToLight) < closestDepth ? 1 : 0;
+	shadow = getCurrentDepth(fragToLight) < closestDepth ? 1 : 0;
 	
 	FragColor = vec4(max(0.35,shadow) * result, 1);
 	if(texture(texture_diffuse1, TexCoords).a < 0.5)
