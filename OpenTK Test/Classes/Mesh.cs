@@ -64,7 +64,7 @@ namespace OpenTK_Test
 			for (int i = 0; i < textures.Length; i++)
 			{
 				GL.ActiveTexture(TextureUnit.Texture0 + i); // active proper texture unit before binding
-												  // retrieve texture number (the N in diffuse_textureN)
+															// retrieve texture number (the N in diffuse_textureN)
 				string number = "";
 				string name = textures[i].type;
 				if (name == "texture_diffuse")

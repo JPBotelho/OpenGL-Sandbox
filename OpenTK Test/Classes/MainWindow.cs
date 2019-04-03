@@ -32,37 +32,37 @@ namespace OpenTK_Test
 		{
 			new PointLight()
 			{
-				position = new Vector3(0.0f, 4.0f, 0.0f),
+				position = new Vector3(0.0f, 4.0f, 0.0f)/*,
 				linear = 0.027f,
-				quadratic = 0.0028f				
+				quadratic = 0.0028f	*/			
 			},
 			new PointLight()
 			{
 				position = new Vector3(111, 20, -41),
-				ambient = new Vector3(0, 229f/255, 1),
+				/*ambient = new Vector3(0, 229f/255, 1),
 				diffuse = new Vector3(0, 229f/255, 1),
-				specular = new Vector3(0, 229f/255, 1)
+				specular = new Vector3(0, 229f/255, 1)*/
 			},
 			new PointLight()
 			{
 				position = new Vector3(111, 20, 41),
-				ambient = new Vector3(246f/255, 0, 1),
+				/*ambient = new Vector3(246f/255, 0, 1),
 				diffuse = new Vector3(246f/255, 0, 1),
-				specular = new Vector3(246f/255, 0, 1)
+				specular = new Vector3(246f/255, 0, 1)*/
 			},
 			new PointLight()
 			{
 				position = new Vector3(-111, 20, 41),
-				ambient = new Vector3(0, 1, 110f/255),
+				/*ambient = new Vector3(0, 1, 110f/255),
 				diffuse = new Vector3(0, 1, 1f/255),
-				specular = new Vector3(0, 1, 1f/255)
+				specular = new Vector3(0, 1, 1f/255)*/
 			},
 			new PointLight()
 			{
 				position = new Vector3(-111, 20, -41),
-				ambient = new Vector3(1, 178f/255, 0),
+				/*ambient = new Vector3(1, 178f/255, 0),
 				diffuse = new Vector3(1, 178f/255, 0),
-				specular = new Vector3(1, 178f/255, 0)
+				specular = new Vector3(1, 178f/255, 0)*/
 			}
 		};
 		string[] skyboxFaces =
@@ -77,7 +77,7 @@ namespace OpenTK_Test
 
 		private DateTime startTime;
 
-		int shadowWidth = 2048*2, shadowHeight = 2048*2;
+		int shadowWidth = 1024, shadowHeight = 1024;
 		public MainWindow(int width, int height, GraphicsMode mode, string title) : base(width, height, mode, title) { }
 
 		protected override void OnLoad(EventArgs e)
@@ -94,6 +94,8 @@ namespace OpenTK_Test
 			depthShader = new Shader("depth.vs", "depth.fs", "depth.gs");
 			model = new Model("C:/Users/User/source/repos/OpenTK Test/OpenTK Test/bin/Debug/resources/sponza/sponza.obj");
 			SetupShadowmaps(pointLights);
+			SetShadowMaps(pointLights, depthShader, shader);
+
 			cam = new Camera(Vector3.UnitZ * 3);
 			cam.AspectRatio = (float)Width / Height;
 			base.OnLoad(e);
@@ -103,7 +105,6 @@ namespace OpenTK_Test
 		{
 			Title = $"(Vsync: {VSync}) FPS: {1f / e.Time:0}";
 
-			SetShadowMaps(pointLights, depthShader, shader);
 			GL.Viewport(0, 0, Width, Height);
 			GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
@@ -306,6 +307,8 @@ namespace OpenTK_Test
 				GL.BindTexture(TextureTarget.TextureCubeMap, shadowCubemaps[i]);
 				targetShader.SetInt("depthMaps["+i+"]", 10+i);
 				CheckLastError();
+				GL.DeleteFramebuffer(shadowFBOs[i]);
+				//GL.DeleteTexture(shadowCubemaps[i]);
 			}
 		}
 	}

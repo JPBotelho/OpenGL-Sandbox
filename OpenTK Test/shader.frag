@@ -91,6 +91,12 @@ void main()
 
 	vec3 finalResult = vec3(0);
 
+	/*vec3 fragToLight = FragPos - pointLights[2].position; 
+
+	float closestDepth = texture(depthMaps[2], fragToLight).r;
+
+	float shadow = getCurrentDepth(fragToLight) - 0.00001 < closestDepth ? 1 : 0;*/
+	
 	for(int i = 0; i < NR_POINT_LIGHTS; i++)
 	{
 		vec3 fragToLight = FragPos - pointLights[i].position; 
@@ -101,12 +107,13 @@ void main()
 		float closestDepth = texture(depthMaps[i], fragToLight).r;
 
 		float shadow = getCurrentDepth(fragToLight) - 0.00001 < closestDepth ? 1 : 0;
-		finalResult += max(0.4, shadow) * result;
+		finalResult += max(0.0, shadow) * result;
 	}
 
 
-
 	FragColor = vec4(finalResult, 1);
+
+	//FragColor = vec4(shadow.xxx, 1);
 	//if(texture(texture_diffuse1, TexCoords).a < 0.5)
 	//	discard;
 
