@@ -32,7 +32,7 @@ namespace OpenTK_Test
 		{
 			new PointLight()
 			{
-				position = new Vector3(0, 4, 0)
+				position = new Vector3(0.0f, 1.0f, 3.0f)
 			}/*,
 			new PointLight()
 			{
@@ -63,7 +63,6 @@ namespace OpenTK_Test
 				specular = new Vector3(1, 178f/255, 0)
 			}*/
 		};
-		Matrix4 shadowProj;
 		string[] skyboxFaces =
 		{
 			"resources/skybox/right.jpg",
@@ -111,7 +110,6 @@ namespace OpenTK_Test
 			Matrix4 proj = cam.GetProjectionMatrix();
 			Matrix4 modelMatrix = Matrix4.CreateScale(0.1f);
 
-			shader.SetMatrix4("cubeProjMatrix", shadowProj);
 			shader.SetMatrix4("viewMatrix", view);
 			shader.SetMatrix4("projMatrix", proj);
 			shader.SetMatrix4("modelMatrix", modelMatrix);
@@ -287,7 +285,7 @@ namespace OpenTK_Test
 
 				depthShader.Use();
 				for (int z = 0; z < 6; ++z)
-					depthShader.SetMatrix4("shadowMatrices[" + z + "]", shadowTransforms[i]);
+					depthShader.SetMatrix4("shadowMatrices[" + z + "]", shadowTransforms[z]);
 				depthShader.SetVec3("lightPos", lightPos);
 				depthShader.SetFloat("far_plane", far_plane);
 				Matrix4 modelMatrix = Matrix4.CreateScale(0.1f);
@@ -301,6 +299,7 @@ namespace OpenTK_Test
 				GL.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
 
 				targetShader.Use();
+				targetShader.SetMatrix4("cubeProjMatrix", shadowProj);
 				GL.ActiveTexture(TextureUnit.Texture10+i);
 				GL.BindTexture(TextureTarget.TextureCubeMap, shadowCubemaps[i]);
 				targetShader.SetInt("depthMaps["+i+"]", 10+i);

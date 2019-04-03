@@ -88,33 +88,19 @@ void main()
 	vec3 norm = normalize(Normals);
     vec3 viewDir = normalize(cameraPos - FragPos);
 	vec3 result = vec3(0);
+
 	for(int i = 0; i < NR_POINT_LIGHTS; i++)
 		result += CalcPointLight(pointLights[i], norm, FragPos, viewDir);
-	//vec3 result = CalcPointLight(pointLights[0], norm, FragPos, viewDir);
 
 	vec3 fragToLight = FragPos - pointLights[0].position; 
 	float closestDepth = texture(depthMaps[0], fragToLight).r;
 
 
-	float shadow = 0.0;
-    /*float bias = 0.000005;
-    int samples = 20;
-    float viewDistance = length(cameraPos - FragPos);
-    float diskRadius = (1.0 + (viewDistance / 300)) / 25.0;
-    for(int i = 0; i < samples; ++i)
-    {
-        float closestDepth = texture(depthMaps[0], fragToLight + gridSamplingDisk[i] * diskRadius).r;
-        //closestDepth *= far_plane;   // undo mapping [0;1]
-        if(getCurrentDepth(fragToLight) - bias < closestDepth)
-            shadow += 1.0;
-    }
-    shadow /= float(samples);*/
-
-	shadow = getCurrentDepth(fragToLight) < closestDepth ? 1 : 0;
+	float shadow = getCurrentDepth(fragToLight) < closestDepth ? 1 : 0;
 	
-	FragColor = vec4(shadow.xxx, 1);//vec4(max(0.35,shadow) * result, 1);
-	if(texture(texture_diffuse1, TexCoords).a < 0.5)
-		discard;
+	FragColor = vec4(max(0,shadow) * result, 1);
+	//if(texture(texture_diffuse1, TexCoords).a < 0.5)
+	//	discard;
 
 }
 
