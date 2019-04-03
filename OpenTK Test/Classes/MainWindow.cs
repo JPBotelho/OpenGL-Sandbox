@@ -38,28 +38,28 @@ namespace OpenTK_Test
 			},
 			new PointLight()
 			{
-				position = new Vector3(111, 25, -41),
+				position = new Vector3(111, 20, -41),
 				ambient = new Vector3(0, 229f/255, 1),
 				diffuse = new Vector3(0, 229f/255, 1),
 				specular = new Vector3(0, 229f/255, 1)
 			},
 			new PointLight()
 			{
-				position = new Vector3(111, 25, 41),
+				position = new Vector3(111, 20, 41),
 				ambient = new Vector3(246f/255, 0, 1),
 				diffuse = new Vector3(246f/255, 0, 1),
 				specular = new Vector3(246f/255, 0, 1)
 			},
 			new PointLight()
 			{
-				position = new Vector3(-111, 25, 41),
+				position = new Vector3(-111, 20, 41),
 				ambient = new Vector3(0, 1, 110f/255),
 				diffuse = new Vector3(0, 1, 1f/255),
 				specular = new Vector3(0, 1, 1f/255)
 			},
 			new PointLight()
 			{
-				position = new Vector3(-111, 25, -41),
+				position = new Vector3(-111, 20, -41),
 				ambient = new Vector3(1, 178f/255, 0),
 				diffuse = new Vector3(1, 178f/255, 0),
 				specular = new Vector3(1, 178f/255, 0)
@@ -83,7 +83,7 @@ namespace OpenTK_Test
 		protected override void OnLoad(EventArgs e)
 		{
 			startTime = DateTime.Now;
-			VSync = VSyncMode.Off;
+			//VSync = VSyncMode.Off;
 			//skybox = new Skybox(skyboxFaces);
 			GL.Enable(EnableCap.DepthTest);
 			GL.Enable(EnableCap.CullFace);

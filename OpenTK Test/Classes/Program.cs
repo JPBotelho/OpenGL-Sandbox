@@ -10,7 +10,7 @@ namespace OpenTK_Test
 	{
 		static void Main()
 		{
-			new MainWindow(800, 600, new GraphicsMode(new ColorFormat(8, 8, 8, 0), 24, 8, 4), "Test OpenTK").Run(120.0);
+			new MainWindow(1366, 768, new GraphicsMode(new ColorFormat(8, 8, 8, 0), 24, 8, 4), "Test OpenTK").Run(120.0);
 		}
 	}
 }
