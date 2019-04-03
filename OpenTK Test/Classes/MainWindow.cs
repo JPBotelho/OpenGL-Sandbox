@@ -77,21 +77,13 @@ namespace OpenTK_Test
 		private DateTime startTime;
 
 		int shadowWidth = 2048*2, shadowHeight = 2048*2;
-		int depthMapFBO, depthCubemap;
 		public MainWindow(int width, int height, GraphicsMode mode, string title) : base(width, height, mode, title) { }
 
-		protected override void OnResize(EventArgs e)
-		{
-			cam.AspectRatio = (float)Width / Height;
-			GL.Viewport(0, 0, Width, Height);
-			base.OnResize(e);
-		}
 		protected override void OnLoad(EventArgs e)
 		{
 			startTime = DateTime.Now;
 			VSync = VSyncMode.Off;
 			//skybox = new Skybox(skyboxFaces);
-			shadowProj = Matrix4.CreatePerspectiveFieldOfView(MathHelper.DegreesToRadians(90.0f), (float)shadowWidth / shadowHeight, 0.1f, 300f);
 			GL.Enable(EnableCap.DepthTest);
 			GL.Enable(EnableCap.CullFace);
 			CheckLastError();
@@ -100,89 +92,25 @@ namespace OpenTK_Test
 			shader = new Shader("shader.vert", "shader.frag");
 			depthShader = new Shader("depth.vs", "depth.fs", "depth.gs");
 			model = new Model("C:/Users/User/source/repos/OpenTK Test/OpenTK Test/bin/Debug/resources/sponza/sponza.obj");
-
+			SetupShadowmaps(pointLights);
 			cam = new Camera(Vector3.UnitZ * 3);
 			cam.AspectRatio = (float)Width / Height;
-
-
-			depthCubemap = GL.GenTexture();
-			GL.BindTexture(TextureTarget.TextureCubeMap, depthCubemap);
-
-			for (int i = 0; i < 6; i++)
-			{
-				GL.TexImage2D(TextureTarget.TextureCubeMapPositiveX + i, 0, PixelInternalFormat.DepthComponent32f, shadowWidth, shadowHeight, 0, PixelFormat.DepthComponent, PixelType.Float, IntPtr.Zero);
-				CheckLastError();
-			}
-			GL.TexParameter(TextureTarget.TextureCubeMap, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear);
-			GL.TexParameter(TextureTarget.TextureCubeMap, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Linear);
-			GL.TexParameter(TextureTarget.TextureCubeMap, TextureParameterName.TextureWrapS, (int)TextureWrapMode.ClampToEdge);
-			GL.TexParameter(TextureTarget.TextureCubeMap, TextureParameterName.TextureWrapT, (int)TextureWrapMode.ClampToEdge);
-			GL.TexParameter(TextureTarget.TextureCubeMap, TextureParameterName.TextureWrapR, (int)TextureWrapMode.ClampToEdge);
-			
-			depthMapFBO = GL.GenFramebuffer();
-			GL.BindFramebuffer(FramebufferTarget.Framebuffer, depthMapFBO);
-			GL.FramebufferTexture(FramebufferTarget.Framebuffer, FramebufferAttachment.DepthAttachment, depthCubemap, 0);
-			GL.DrawBuffer(DrawBufferMode.None);
-			GL.ReadBuffer(ReadBufferMode.None);
-			GL.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
-
 			base.OnLoad(e);
 		}
 
 		protected override void OnRenderFrame(FrameEventArgs e)
 		{
 			Title = $"(Vsync: {VSync}) FPS: {1f / e.Time:0}";
-			GL.ClearColor(Color.DeepPink);
-			GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
-			
-			GL.Viewport(0, 0, shadowWidth, shadowHeight);
-			GL.BindFramebuffer(FramebufferTarget.Framebuffer, depthMapFBO);
-			GL.Clear(ClearBufferMask.DepthBufferBit);
 
-			float near_plane = 0.1f;
-			float far_plane = 300f;
-			//Console.WriteLine(cam.Position);
-			pointLights[0].position.X = (float)Math.Sin((DateTime.Now - startTime).TotalSeconds / 3f) * 70;
-			Console.WriteLine(pointLights[0].position);
-			Vector3 lightPos = pointLights[0].position;
-			
-			Matrix4[] shadowTransforms = new Matrix4[]
-			{
-				Matrix4.LookAt(lightPos, lightPos + new Vector3(1.0f, 0.0f, 0.0f), new Vector3(0.0f, -1.0f, 0.0f)) * shadowProj,
-				Matrix4.LookAt(lightPos, lightPos + new Vector3(-1.0f, 0.0f, 0.0f), new Vector3(0.0f, -1.0f, 0.0f)) * shadowProj,
-				Matrix4.LookAt(lightPos, lightPos + new Vector3(0.0f, 1.0f, 0.0f), new Vector3(0.0f, 0.0f, 1.0f)) * shadowProj,
-				Matrix4.LookAt(lightPos, lightPos + new Vector3(0.0f, -1.0f, 0.0f), new Vector3(0.0f, 0.0f, -1.0f)) * shadowProj,
-				Matrix4.LookAt(lightPos, lightPos + new Vector3(0.0f, 0.0f, 1.0f), new Vector3(0.0f, -1.0f, 0.0f)) * shadowProj,
-				Matrix4.LookAt(lightPos, lightPos + new Vector3(0.0f, 0.0f, -1.0f), new Vector3(0.0f, -1.0f, 0.0f)) * shadowProj
-			};
-			
-			depthShader.Use();
-			for (int i = 0; i < 6; ++i)
-				depthShader.SetMatrix4("shadowMatrices[" + i + "]", shadowTransforms[i]);
-			depthShader.SetVec3("lightPos", lightPos);
-			depthShader.SetFloat("far_plane", far_plane);
-			Matrix4 modelMatrix = Matrix4.CreateScale(0.1f);
-			depthShader.SetMatrix4("modelMatrix", modelMatrix);
-			//GL.Enable(EnableCap.PolygonOffsetFill);
-			GL.Enable(EnableCap.PolygonOffsetFill);
-			GL.PolygonOffset(1.1f, 1.5f);
-			model.Draw(depthShader);
-			GL.Disable(EnableCap.PolygonOffsetFill);
-			//GL.Disable(EnableCap.PolygonOffsetFill);
-
-
-
-			GL.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
-
+			SetShadowMaps(pointLights, depthShader, shader);
 			GL.Viewport(0, 0, Width, Height);
 			GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
-			shader.Use();
-			GL.ActiveTexture(TextureUnit.Texture7);
-			GL.BindTexture(TextureTarget.TextureCubeMap, depthCubemap);
-			shader.SetInt("depthMap", 7);
+			shader.Use();			
 			Matrix4 view = cam.GetViewMatrix();
 			Matrix4 proj = cam.GetProjectionMatrix();
+			Matrix4 modelMatrix = Matrix4.CreateScale(0.1f);
+
 			shader.SetMatrix4("cubeProjMatrix", shadowProj);
 			shader.SetMatrix4("viewMatrix", view);
 			shader.SetMatrix4("projMatrix", proj);
@@ -282,6 +210,13 @@ namespace OpenTK_Test
 			base.OnFocusedChanged(e);
 		}
 
+		protected override void OnResize(EventArgs e)
+		{
+			cam.AspectRatio = (float)Width / Height;
+			GL.Viewport(0, 0, Width, Height);
+			base.OnResize(e);
+		}
+
 		protected override void OnUnload(EventArgs e)
 		{
 			GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
@@ -291,5 +226,86 @@ namespace OpenTK_Test
 			base.OnUnload(e);
 		}
 
+		private int[] shadowCubemaps;
+		private int[] shadowFBOs;
+		private void SetupShadowmaps(PointLight[] lights)
+		{
+			shadowCubemaps = new int[lights.Length];
+			shadowFBOs = new int[lights.Length];
+
+			for(int i = 0; i < lights.Length; i++)
+			{
+				shadowCubemaps[i] = GL.GenTexture();
+				GL.BindTexture(TextureTarget.TextureCubeMap, shadowCubemaps[i]);
+
+				for (int z = 0; z < 6; z++)
+				{
+					GL.TexImage2D(TextureTarget.TextureCubeMapPositiveX + z, 0, PixelInternalFormat.DepthComponent32f, shadowWidth, shadowHeight, 0, PixelFormat.DepthComponent, PixelType.Float, IntPtr.Zero);
+					CheckLastError();
+				}
+				GL.TexParameter(TextureTarget.TextureCubeMap, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear);
+				GL.TexParameter(TextureTarget.TextureCubeMap, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Linear);
+				GL.TexParameter(TextureTarget.TextureCubeMap, TextureParameterName.TextureWrapS, (int)TextureWrapMode.ClampToEdge);
+				GL.TexParameter(TextureTarget.TextureCubeMap, TextureParameterName.TextureWrapT, (int)TextureWrapMode.ClampToEdge);
+				GL.TexParameter(TextureTarget.TextureCubeMap, TextureParameterName.TextureWrapR, (int)TextureWrapMode.ClampToEdge);
+
+				shadowFBOs[i] = GL.GenFramebuffer();
+				GL.BindFramebuffer(FramebufferTarget.Framebuffer, shadowFBOs[i]);
+				GL.FramebufferTexture(FramebufferTarget.Framebuffer, FramebufferAttachment.DepthAttachment, shadowCubemaps[i], 0);
+				GL.DrawBuffer(DrawBufferMode.None);
+				GL.ReadBuffer(ReadBufferMode.None);
+				GL.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
+				CheckLastError();
+			}			
+		}
+
+		private void SetShadowMaps(PointLight[] lights, Shader depthShader, Shader targetShader)
+		{
+			for (int i = 0; i < lights.Length; i++)
+			{
+				GL.ClearColor(Color.DeepPink);
+				GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
+
+				GL.Viewport(0, 0, shadowWidth, shadowHeight);
+				GL.BindFramebuffer(FramebufferTarget.Framebuffer, shadowFBOs[i]);
+				GL.Clear(ClearBufferMask.DepthBufferBit);
+
+				float near_plane = 0.1f;
+				float far_plane = 300f;
+
+				Vector3 lightPos = pointLights[i].position;
+				Matrix4 shadowProj = Matrix4.CreatePerspectiveFieldOfView(MathHelper.DegreesToRadians(90.0f), (float)shadowWidth / shadowHeight, 0.1f, 300f);
+				Matrix4[] shadowTransforms = new Matrix4[]
+				{
+					Matrix4.LookAt(lightPos, lightPos + new Vector3(1.0f, 0.0f, 0.0f), new Vector3(0.0f, -1.0f, 0.0f)) * shadowProj,
+					Matrix4.LookAt(lightPos, lightPos + new Vector3(-1.0f, 0.0f, 0.0f), new Vector3(0.0f, -1.0f, 0.0f)) * shadowProj,
+					Matrix4.LookAt(lightPos, lightPos + new Vector3(0.0f, 1.0f, 0.0f), new Vector3(0.0f, 0.0f, 1.0f)) * shadowProj,
+					Matrix4.LookAt(lightPos, lightPos + new Vector3(0.0f, -1.0f, 0.0f), new Vector3(0.0f, 0.0f, -1.0f)) * shadowProj,
+					Matrix4.LookAt(lightPos, lightPos + new Vector3(0.0f, 0.0f, 1.0f), new Vector3(0.0f, -1.0f, 0.0f)) * shadowProj,
+					Matrix4.LookAt(lightPos, lightPos + new Vector3(0.0f, 0.0f, -1.0f), new Vector3(0.0f, -1.0f, 0.0f)) * shadowProj
+				};
+
+				depthShader.Use();
+				for (int z = 0; z < 6; ++z)
+					depthShader.SetMatrix4("shadowMatrices[" + z + "]", shadowTransforms[i]);
+				depthShader.SetVec3("lightPos", lightPos);
+				depthShader.SetFloat("far_plane", far_plane);
+				Matrix4 modelMatrix = Matrix4.CreateScale(0.1f);
+				depthShader.SetMatrix4("modelMatrix", modelMatrix);
+
+				GL.Enable(EnableCap.PolygonOffsetFill);
+				GL.PolygonOffset(1.1f, 1.5f);
+				model.Draw(depthShader);
+				GL.Disable(EnableCap.PolygonOffsetFill);
+
+				GL.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
+
+				targetShader.Use();
+				GL.ActiveTexture(TextureUnit.Texture10+i);
+				GL.BindTexture(TextureTarget.TextureCubeMap, shadowCubemaps[i]);
+				targetShader.SetInt("depthMaps["+i+"]", 10+i);
+				CheckLastError();
+			}
+		}
 	}
 }

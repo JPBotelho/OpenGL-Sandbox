@@ -56,7 +56,7 @@ vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir);
 vec3 CalcSpotLight(Spotlight light, vec3 normal, vec3 fragPos, vec3 viewDir);
 float materialshininess= 32.0f;
 
-uniform samplerCube depthMap;
+uniform samplerCube depthMaps[1];
 uniform mat4 cubeProjMatrix;
 
 vec3 gridSamplingDisk[20] = vec3[]
@@ -93,7 +93,7 @@ void main()
 	//vec3 result = CalcPointLight(pointLights[0], norm, FragPos, viewDir);
 
 	vec3 fragToLight = FragPos - pointLights[0].position; 
-	float closestDepth = texture(depthMap, fragToLight).r;
+	float closestDepth = texture(depthMaps[0], fragToLight).r;
 
 
 	float shadow = 0.0;
@@ -103,7 +103,7 @@ void main()
     float diskRadius = (1.0 + (viewDistance / 300)) / 25.0;
     for(int i = 0; i < samples; ++i)
     {
-        float closestDepth = texture(depthMap, fragToLight + gridSamplingDisk[i] * diskRadius).r;
+        float closestDepth = texture(depthMaps[0], fragToLight + gridSamplingDisk[i] * diskRadius).r;
         //closestDepth *= far_plane;   // undo mapping [0;1]
         if(getCurrentDepth(fragToLight) - bias < closestDepth)
             shadow += 1.0;
@@ -112,7 +112,7 @@ void main()
 
 	shadow = getCurrentDepth(fragToLight) < closestDepth ? 1 : 0;
 	
-	FragColor = vec4(max(0.35,shadow) * result, 1);
+	FragColor = vec4(shadow.xxx, 1);//vec4(max(0.35,shadow) * result, 1);
 	if(texture(texture_diffuse1, TexCoords).a < 0.5)
 		discard;
 
