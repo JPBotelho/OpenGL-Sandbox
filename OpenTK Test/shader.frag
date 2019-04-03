@@ -36,7 +36,7 @@ struct Spotlight
     vec3 specular;       
 };
 
-#define NR_POINT_LIGHTS 1
+#define NR_POINT_LIGHTS 2
 
 
 in vec2 TexCoords;
@@ -56,7 +56,7 @@ vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir);
 vec3 CalcSpotLight(Spotlight light, vec3 normal, vec3 fragPos, vec3 viewDir);
 float materialshininess= 32.0f;
 
-uniform samplerCube depthMaps[1];
+uniform samplerCube depthMaps[NR_POINT_LIGHTS];
 uniform mat4 cubeProjMatrix;
 
 vec3 gridSamplingDisk[20] = vec3[]
@@ -89,14 +89,14 @@ void main()
     vec3 viewDir = normalize(cameraPos - FragPos);
 	vec3 result = vec3(0);
 
-	for(int i = 0; i < NR_POINT_LIGHTS; i++)
-		result += CalcPointLight(pointLights[i], norm, FragPos, viewDir);
+	//for(int i = 0; i < NR_POINT_LIGHTS; i++)
+	result += CalcPointLight(pointLights[1], norm, FragPos, viewDir);
 
-	vec3 fragToLight = FragPos - pointLights[0].position; 
-	float closestDepth = texture(depthMaps[0], fragToLight).r;
+	vec3 fragToLight = FragPos - pointLights[1].position; 
+	float closestDepth = texture(depthMaps[1], fragToLight).r;
 
 
-	float shadow = getCurrentDepth(fragToLight) < closestDepth ? 1 : 0;
+	float shadow = getCurrentDepth(fragToLight) - 0.001 < closestDepth ? 1 : 0;
 	
 	FragColor = vec4(max(0,shadow) * result, 1);
 	//if(texture(texture_diffuse1, TexCoords).a < 0.5)

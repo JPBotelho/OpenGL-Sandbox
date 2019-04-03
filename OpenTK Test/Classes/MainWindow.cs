@@ -33,15 +33,15 @@ namespace OpenTK_Test
 			new PointLight()
 			{
 				position = new Vector3(0.0f, 1.0f, 3.0f)
-			}/*,
+			},
 			new PointLight()
 			{
-				position = new Vector3(111, 17, -41),
+				position = new Vector3(111, 25, -41),
 				ambient = new Vector3(0, 229f/255, 1),
 				diffuse = new Vector3(0, 229f/255, 1),
 				specular = new Vector3(0, 229f/255, 1)
 			},
-			new PointLight()
+			/*new PointLight()
 			{
 				position = new Vector3(111, 17, 41),
 				ambient = new Vector3(246f/255, 0, 1),
