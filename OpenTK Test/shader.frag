@@ -56,7 +56,7 @@ vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir);
 vec3 CalcSpotLight(Spotlight light, vec3 normal, vec3 fragPos, vec3 viewDir);
 float materialshininess= 32.0f;
 
-uniform sampler2D shadowAtlases[NR_POINT_LIGHTS];
+uniform samplerCube depthMaps[NR_POINT_LIGHTS];
 uniform mat4 cubeProjMatrix;
 
 vec3 gridSamplingDisk[20] = vec3[]

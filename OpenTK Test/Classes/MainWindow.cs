@@ -307,12 +307,12 @@ namespace OpenTK_Test
 
 				GL.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
 
-				targetShader.Use();
+				/*targetShader.Use();
 				GL.ActiveTexture(TextureUnit.Texture10+i);
 				GL.BindTexture(TextureTarget.Texture2D, shadowAtlases[i]);
 				targetShader.SetInt("shadowAtlases["+i+"]", 10+i);
 				CheckLastError();
-				GL.DeleteFramebuffer(shadowFBOs[i]);
+				GL.DeleteFramebuffer(shadowFBOs[i]);*/
 				//GL.DeleteTexture(shadowCubemaps[i]);
 			}
 		}
