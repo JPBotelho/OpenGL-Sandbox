@@ -36,7 +36,7 @@ struct Spotlight
     vec3 specular;       
 };
 
-#define NR_POINT_LIGHTS 5
+#define NR_POINT_LIGHTS 1
 
 
 in vec2 TexCoords;
@@ -56,7 +56,7 @@ vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir);
 vec3 CalcSpotLight(Spotlight light, vec3 normal, vec3 fragPos, vec3 viewDir);
 float materialshininess= 32.0f;
 
-uniform samplerCube depthMaps[NR_POINT_LIGHTS];
+uniform sampler2D shadowAtlases[NR_POINT_LIGHTS];
 uniform mat4 cubeProjMatrix;
 
 vec3 gridSamplingDisk[20] = vec3[]
