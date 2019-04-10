@@ -94,6 +94,7 @@ namespace OpenTK_Test
 			depthShader = new Shader("depth.vert", "depth.frag");
 			model = new Model("C:/Users/User/source/repos/OpenTK Test/OpenTK Test/bin/Debug/resources/sponza/sponza.obj");
 			SetupShadowmaps(pointLights);
+			SetShadowMaps(pointLights, depthShader, shader);
 
 			cam = new Camera(Vector3.UnitZ * 3);
 			cam.AspectRatio = (float)Width / Height;
@@ -106,7 +107,6 @@ namespace OpenTK_Test
 
 			GL.Viewport(0, 0, Width, Height);
 			GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
-			SetShadowMaps(pointLights, depthShader, shader);
 
 			shader.Use();			
 			Matrix4 view = cam.GetViewMatrix();
@@ -143,6 +143,7 @@ namespace OpenTK_Test
 
 		private void HandleKeyboard(FrameEventArgs e)
 		{
+			Console.WriteLine(cam.Position);
 			var input = Keyboard.GetState();
 
 			if (Focused)
@@ -243,10 +244,11 @@ namespace OpenTK_Test
 				GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Linear);
 				GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear);
 
-				GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)TextureWrapMode.Repeat);
-				GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)TextureWrapMode.Repeat);
+				GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)TextureWrapMode.ClampToEdge);
+				GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)TextureWrapMode.ClampToEdge);
 
-				GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.DepthComponent, shadowWidth * 3, shadowHeight * 2, 0, PixelFormat.DepthComponent, PixelType.Float, IntPtr.Zero);
+				GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.DepthComponent32f, shadowWidth * 3, shadowHeight * 2, 0, PixelFormat.DepthComponent, PixelType.Float, IntPtr.Zero);
+				//GL.GenerateMipmap(GenerateMipmapTarget.Texture2D);
 
 				shadowFBOs[i] = GL.GenFramebuffer();
 				GL.BindFramebuffer(FramebufferTarget.Framebuffer, shadowFBOs[i]);

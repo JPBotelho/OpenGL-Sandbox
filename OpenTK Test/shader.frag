@@ -57,17 +57,8 @@ vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir);
 vec3 CalcSpotLight(Spotlight light, vec3 normal, vec3 fragPos, vec3 viewDir);
 float materialshininess= 32.0f;
 
-uniform sampler2D shadowAtlases;
+uniform sampler2D shadowAtlases;/*
 uniform mat4 cubeProjMatrix;
-
-vec3 gridSamplingDisk[20] = vec3[]
-(
-   vec3(1, 1,  1), vec3( 1, -1,  1), vec3(-1, -1,  1), vec3(-1, 1,  1), 
-   vec3(1, 1, -1), vec3( 1, -1, -1), vec3(-1, -1, -1), vec3(-1, 1, -1),
-   vec3(1, 1,  0), vec3( 1, -1,  0), vec3(-1, -1,  0), vec3(-1, 1,  0),
-   vec3(1, 0,  1), vec3(-1,  0,  1), vec3( 1,  0, -1), vec3(-1, 0, -1),
-   vec3(0, 1,  1), vec3( 0, -1,  1), vec3( 0, -1, -1), vec3( 0, 1, -1)
-);
 
 float chebyshevNorm(in vec3 dir)
 {
@@ -82,35 +73,25 @@ float getCurrentDepth(vec3 fragToLight)
 	float NDC = postProjPos.z/postProjPos.w;
 	float Window = NDC*0.5+0.5;
 	return Window;
-}
+}*/
 
-  
-vec2 getUVs(vec3 shadowCoord) {
-    vec2 scale = 1.0f / textureSize(shadowAtlases, 0);
-    shadowCoord.xy *= textureSize(shadowAtlases, 0);
-    vec2 offset = fract(shadowCoord.xy - 0.5f);
-    shadowCoord.xy -= offset*0.5f;
-    return shadowCoord.xy;
-}
-
-vec2 getCorrectUVs(vec3 lightDirection)
+float map(float value, float min1, float max1, float min2, float max2) 
 {
-	vec3 absDir = abs(lightDirection);
-    vec4 project = max(absDir.x, absDir.y) > absDir.z ?
-                    (absDir.x > absDir.y ?
-                        vec4(lightDirection.zyx, 0.0f / 3.0f) :
-                        vec4(lightDirection.xzy, 1.0f / 3.0f)) :
-                    vec4(lightDirection, 2.0f / 3.0f);
-    //vec4 shadowCoord = mvp * vec4(project.xy, abs(project.z), 1.0f);
-	project = vec4(project.xy, abs(project.z), 1);
-	vec2 scale = 1.0f / textureSize(shadowAtlases, 0);
-    project.xy *= textureSize(shadowAtlases, 0);
-    vec2 offset = fract(project.xy - 0.5f);
-    project.xy -= offset*0.5f;
-	return project.xy;
+	float perc = (value - min1) / (max1 - min1);
+
+	// Do the same operation backwards with min2 and max2
+	return perc * (max2 - min2) + min2;
 }
 
-vec2 sampleCube(const vec3 v)
+float linearize(float dep)
+{
+	float f=300.0;
+	float n = 0.1;
+	float z = (2 * n) / (f + n - dep * (f - n));
+	return z;
+}
+
+vec2 sampleCube(vec3 v)
 {
 	vec3 vAbs = abs(v);
 	float ma;
@@ -135,28 +116,39 @@ vec2 sampleCube(const vec3 v)
 		uv = vec2(v.x < 0.0 ? v.z : -v.z, -v.y);
 	}
 	vec2 faceUVS = uv * ma + 0.5;
-	vec2 size = textureSize(shadowAtlases, 0);
-	vec2 faceSize = vec2(size.x / 3.0, size.y / 2.0);
 
-	faceUVS *= faceSize;
-	if(faceIndex % 2 == 0)
+	if(faceIndex == 0) //+X
 	{
-		//upper half
-		faceUVS.y += size.y / 2;
-	}
-	else if(faceIndex % 2 != 0)
+		faceUVS.x = map(faceUVS.x, 0.0, 1.0, 0.0, 1.0/3.0);
+		faceUVS.y = map(faceUVS.y, 0.0, 1.0, .5f, 1.0);
+		return faceUVS;
+	} else if(faceIndex == 1)//-X
 	{
-		//faceUVS.y -= size.y / 2.0;
-	}
-	if(faceIndex == 2 || faceIndex == 3)
+		faceUVS.x = map(faceUVS.x, 0.0, 1.0, 0.0, 1.0/3.0);
+		faceUVS.y = map(faceUVS.y, 0.0, 1.0, 0.0, .5);
+		return faceUVS;
+	} else if(faceIndex == 2)//+Y
 	{
-		faceUVS.x += size.x / 3.0;
-	}
-	if(faceIndex == 4 || faceIndex == 5)
+		faceUVS.x = map(faceUVS.x, 0.0, 1.0, 1.0/3.0, 2.0/3.0);
+		faceUVS.y = map(faceUVS.y, 0.0, 1.0, .5f, 1);
+		return faceUVS;
+	} else if(faceIndex == 3)//-Y
 	{
-		faceUVS.x += (size.x / 3.0) * 2.0;
+		faceUVS.x = map(faceUVS.x, 0.0, 1.0, 1.0/3.0, 2.0/3.0);
+		faceUVS.y = map(faceUVS.y, 0.0, 1.0, 0.0, .5);
+		return faceUVS;
+	} else if(faceIndex == 4)//+Z
+	{
+		faceUVS.x = map(faceUVS.x, 0.0, 1.0, 2.0/3.0, 1.0);
+		faceUVS.y = map(faceUVS.y, 0.0, 1.0, .5f, 1);
+		return faceUVS;
+	} else if(faceIndex == 5)//-Z
+	{
+		faceUVS.x = map(faceUVS.x, 0.0, 1.0, 2.0/3.0, 1.0);
+		faceUVS.y = map(faceUVS.y, 0.0, 1.0, 0f, .5);
+		return faceUVS;
 	}
-	return faceUVS /= size;
+	return faceUVS;
 }
 
 void main()
@@ -167,12 +159,14 @@ void main()
 
 	vec3 finalResult = vec3(0);
 
-	vec3 fragToLight = FragPos - pointLights[0].position; 
+	vec3 fragToLight = (FragPos - pointLights[0].position); 
+	vec2 uvs = sampleCube(fragToLight);
 
-	float closestDepth = texture(shadowAtlases, sampleCube(fragToLight)).r;
+	vec2 screnUVS = (gl_FragCoord.xy - .5) / vec2(1366.0, 768.0);
+	float closestDepth = linearize(texture(shadowAtlases, sampleCube(fragToLight)).x);
 
-	float shadow = getCurrentDepth(fragToLight) - 0.00001 < closestDepth ? 1 : 0;
-	FragColor = vec4(closestDepth.xxx, 1);
+	//float shadow = getCurrentDepth(fragToLight) - 0.00001 < closestDepth ? 1 : 0;
+	FragColor = (closestDepth.xxxx);//vec4(vec3(uvs.x == 2), 1);
 	
 	//for(int i = 0; i < NR_POINT_LIGHTS; i++)
 	//{
