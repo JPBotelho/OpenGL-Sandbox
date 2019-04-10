@@ -77,7 +77,7 @@ namespace OpenTK_Test
 
 		private DateTime startTime;
 
-		int shadowWidth = 128, shadowHeight = 128;
+		int shadowWidth = 1024, shadowHeight = 1024;
 		public MainWindow(int width, int height, GraphicsMode mode, string title) : base(width, height, mode, title) { }
 
 		protected override void OnLoad(EventArgs e)

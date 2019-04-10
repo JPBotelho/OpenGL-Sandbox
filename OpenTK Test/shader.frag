@@ -57,7 +57,7 @@ vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir);
 vec3 CalcSpotLight(Spotlight light, vec3 normal, vec3 fragPos, vec3 viewDir);
 float materialshininess= 32.0f;
 
-uniform sampler2D shadowAtlases;/*
+uniform sampler2D shadowAtlases;
 uniform mat4 cubeProjMatrix;
 
 float chebyshevNorm(in vec3 dir)
@@ -73,7 +73,7 @@ float getCurrentDepth(vec3 fragToLight)
 	float NDC = postProjPos.z/postProjPos.w;
 	float Window = NDC*0.5+0.5;
 	return Window;
-}*/
+}
 
 float map(float value, float min1, float max1, float min2, float max2) 
 {
@@ -163,10 +163,10 @@ void main()
 	vec2 uvs = sampleCube(fragToLight);
 
 	vec2 screnUVS = (gl_FragCoord.xy - .5) / vec2(1366.0, 768.0);
-	float closestDepth = linearize(texture(shadowAtlases, sampleCube(fragToLight)).x);
-
+	float closestDepth = (texture(shadowAtlases, sampleCube(fragToLight)).x);
+	float currDepth = distance(FragPos, pointLights[0].position)/300.0;
 	//float shadow = getCurrentDepth(fragToLight) - 0.00001 < closestDepth ? 1 : 0;
-	FragColor = (closestDepth.xxxx);//vec4(vec3(uvs.x == 2), 1);
+	FragColor = vec4(vec3(currDepth < linearize(closestDepth)), 1);//vec4(vec3(uvs.x == 2), 1);
 	
 	//for(int i = 0; i < NR_POINT_LIGHTS; i++)
 	//{
