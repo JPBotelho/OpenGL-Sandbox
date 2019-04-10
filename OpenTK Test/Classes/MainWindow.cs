@@ -91,7 +91,7 @@ namespace OpenTK_Test
 			CursorVisible = false;
 
 			shader = new Shader("shader.vert", "shader.frag");
-			depthShader = new Shader("depth.vs", "depth.fs");
+			depthShader = new Shader("depth.vert", "depth.frag");
 			model = new Model("C:/Users/User/source/repos/OpenTK Test/OpenTK Test/bin/Debug/resources/sponza/sponza.obj");
 			SetupShadowmaps(pointLights);
 
@@ -108,7 +108,7 @@ namespace OpenTK_Test
 			GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 			SetShadowMaps(pointLights, depthShader, shader);
 
-			/*shader.Use();			
+			shader.Use();			
 			Matrix4 view = cam.GetViewMatrix();
 			Matrix4 proj = cam.GetProjectionMatrix();
 			Matrix4 modelMatrix = Matrix4.CreateScale(0.1f);
@@ -124,7 +124,7 @@ namespace OpenTK_Test
 			}
 			//pointLight.Set(shader, 0);
 
-			model.Draw(shader);*/
+			model.Draw(shader);
 			CheckLastError();
 
 			//GL.DepthFunc(DepthFunction.Lequal);
@@ -237,15 +237,16 @@ namespace OpenTK_Test
 			for(int i = 0; i < lights.Length; i++)
 			{
 				shadowAtlases[i] = GL.GenTexture();
+				GL.ActiveTexture(TextureUnit.Texture10 + i);
 				GL.BindTexture(TextureTarget.Texture2D, shadowAtlases[i]);
 
-				GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.LinearMipmapLinear);
+				GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Linear);
 				GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear);
 
 				GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)TextureWrapMode.Repeat);
 				GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)TextureWrapMode.Repeat);
 
-				GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.DepthComponent32, shadowWidth * 3, shadowHeight * 2, 0, PixelFormat.DepthComponent, PixelType.Float, IntPtr.Zero);
+				GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.DepthComponent, shadowWidth * 3, shadowHeight * 2, 0, PixelFormat.DepthComponent, PixelType.Float, IntPtr.Zero);
 
 				shadowFBOs[i] = GL.GenFramebuffer();
 				GL.BindFramebuffer(FramebufferTarget.Framebuffer, shadowFBOs[i]);
@@ -306,14 +307,16 @@ namespace OpenTK_Test
 				}
 
 				GL.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
+				GL.Viewport(0, 0, Width, Height);
 
-				/*targetShader.Use();
+				targetShader.Use();
 				GL.ActiveTexture(TextureUnit.Texture10+i);
+
 				GL.BindTexture(TextureTarget.Texture2D, shadowAtlases[i]);
-				targetShader.SetInt("shadowAtlases["+i+"]", 10+i);
-				CheckLastError();
-				GL.DeleteFramebuffer(shadowFBOs[i]);*/
-				//GL.DeleteTexture(shadowCubemaps[i]);
+
+				targetShader.SetInt("shadowAtlases", 10+i);
+				//GL.DeleteFramebuffer(shadowFBOs[i]);
+				//GL.DeleteTexture(shadowAtlases[i]);
 			}
 		}
 	}
