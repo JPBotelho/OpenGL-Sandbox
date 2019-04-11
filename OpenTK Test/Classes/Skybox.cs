@@ -106,7 +106,7 @@ namespace OpenTK_Test
 			GL.EnableVertexAttribArray(0);
 			GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, 3 * sizeof(float), 0);
 
-			shader = new Shader("skybox.vert", "skybox.frag");
+			shader = new Shader("skybox.vs", "skybox.fs");
 			shader.Use();
 			shader.SetInt("skybox", 0);
 		}

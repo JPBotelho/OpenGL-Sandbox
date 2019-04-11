@@ -36,13 +36,12 @@ struct Spotlight
     vec3 specular;       
 };
 
-#define NR_POINT_LIGHTS 1
+#define NR_POINT_LIGHTS 5
 
 
 in vec2 TexCoords;
 in vec3 FragPos;
 in vec3 Normals;
-in mat4 mvp;
 
 uniform sampler2D texture_diffuse1;
 uniform sampler2D texture_specular1;
@@ -57,9 +56,18 @@ vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir);
 vec3 CalcSpotLight(Spotlight light, vec3 normal, vec3 fragPos, vec3 viewDir);
 float materialshininess= 32.0f;
 
-uniform sampler2D shadowAtlases;
+uniform samplerCube depthMaps[NR_POINT_LIGHTS];
 uniform mat4 cubeProjMatrix;
 
+vec3 gridSamplingDisk[20] = vec3[]
+(
+   vec3(1, 1,  1), vec3( 1, -1,  1), vec3(-1, -1,  1), vec3(-1, 1,  1), 
+   vec3(1, 1, -1), vec3( 1, -1, -1), vec3(-1, -1, -1), vec3(-1, 1, -1),
+   vec3(1, 1,  0), vec3( 1, -1,  0), vec3(-1, -1,  0), vec3(-1, 1,  0),
+   vec3(1, 0,  1), vec3(-1,  0,  1), vec3( 1,  0, -1), vec3(-1, 0, -1),
+   vec3(0, 1,  1), vec3( 0, -1,  1), vec3( 0, -1, -1), vec3( 0, 1, -1)
+);
+ 
 float chebyshevNorm(in vec3 dir)
 {
     vec3 tmp = abs(dir);
@@ -75,93 +83,6 @@ float getCurrentDepth(vec3 fragToLight)
 	return Window;
 }
 
-float map(float value, float min1, float max1, float min2, float max2) 
-{
-	float perc = (value - min1) / (max1 - min1);
-
-	// Do the same operation backwards with min2 and max2
-	return perc * (max2 - min2) + min2;
-}
-
-float linearize(float dep)
-{
-	float f=300.0;
-	float n = 0.1;
-	float z = (2 * n) / (f + n - dep * (f - n));
-	return z;
-}
-
-float VectorToDepthValue(vec3 Vec)
-{
-    vec3 AbsVec = abs(Vec);
-    float LocalZcomp = max(AbsVec.x, max(AbsVec.y, AbsVec.z));
-
-    const float f = 2048.0;
-    const float n = 1.0;
-    float NormZComp = (f+n) / (f-n) - (2*f*n)/(f-n)/LocalZcomp;
-    return (NormZComp + 1.0) * 0.5;
-} 
-
-vec2 sampleCube(vec3 v)
-{
-	vec3 vAbs = abs(v);
-	float ma;
-	vec2 uv;
-	int faceIndex;
-	if(vAbs.z >= vAbs.x && vAbs.z >= vAbs.y)
-	{
-		faceIndex = v.z < 0.0 ? 5 : 4;
-		ma = 0.5 / vAbs.z;
-		uv = vec2(v.z < 0.0 ? -v.x : v.x, -v.y);
-	}
-	else if(vAbs.y >= vAbs.x)
-	{
-		faceIndex = v.y < 0.0 ? 3 : 2;
-		ma = 0.5 / vAbs.y;
-		uv = vec2(v.x, v.y < 0.0 ? -v.z : v.z);
-	}
-	else
-	{
-		faceIndex = v.x < 0.0 ? 1 : 0;
-		ma = 0.5 / vAbs.x;
-		uv = vec2(v.x < 0.0 ? v.z : -v.z, -v.y);
-	}
-	vec2 faceUVS = uv * ma + 0.5;
-
-	if(faceIndex == 0) //+X
-	{
-		faceUVS.x = map(faceUVS.x, 0.0, 1.0, 0.0, 1.0/3.0);
-		faceUVS.y = map(faceUVS.y, 0.0, 1.0, .5f, 1.0);
-		return faceUVS;
-	} else if(faceIndex == 1)//-X
-	{
-		faceUVS.x = map(faceUVS.x, 0.0, 1.0, 0.0, 1.0/3.0);
-		faceUVS.y = map(faceUVS.y, 0.0, 1.0, 0.0, .5);
-		return faceUVS;
-	} else if(faceIndex == 2)//+Y
-	{
-		faceUVS.x = map(faceUVS.x, 0.0, 1.0, 1.0/3.0, 2.0/3.0);
-		faceUVS.y = map(faceUVS.y, 0.0, 1.0, .5f, 1);
-		return faceUVS;
-	} else if(faceIndex == 3)//-Y
-	{
-		faceUVS.x = map(faceUVS.x, 0.0, 1.0, 1.0/3.0, 2.0/3.0);
-		faceUVS.y = map(faceUVS.y, 0.0, 1.0, 0.0, .5);
-		return faceUVS;
-	} else if(faceIndex == 4)//+Z
-	{
-		faceUVS.x = map(faceUVS.x, 0.0, 1.0, 2.0/3.0, 1.0);
-		faceUVS.y = map(faceUVS.y, 0.0, 1.0, .5f, 1);
-		return faceUVS;
-	} else if(faceIndex == 5)//-Z
-	{
-		faceUVS.x = map(faceUVS.x, 0.0, 1.0, 2.0/3.0, 1.0);
-		faceUVS.y = map(faceUVS.y, 0.0, 1.0, 0f, .5);
-		return faceUVS;
-	}
-	return faceUVS;
-}
-
 void main()
 {  
 	vec3 norm = normalize(Normals);
@@ -170,30 +91,27 @@ void main()
 
 	vec3 finalResult = vec3(0);
 
-	vec3 fragToLight = (FragPos - pointLights[0].position); 
-	vec2 uvs = sampleCube(fragToLight);
+	/*vec3 fragToLight = FragPos - pointLights[2].position; 
 
-	vec2 screnUVS = (gl_FragCoord.xy - .5) / vec2(1366.0, 768.0);
-	float closestDepth = (texture(shadowAtlases, sampleCube(fragToLight)).x);
-	float currDepth = VectorToDepthValue(fragToLight);
-	//float shadow = getCurrentDepth(fragToLight) - 0.00001 < closestDepth ? 1 : 0;
-	FragColor = vec4(vec3(currDepth), 1);//vec4(vec3(uvs.x == 2), 1);
+	float closestDepth = texture(depthMaps[2], fragToLight).r;
+
+	float shadow = getCurrentDepth(fragToLight) - 0.00001 < closestDepth ? 1 : 0;*/
 	
-	//for(int i = 0; i < NR_POINT_LIGHTS; i++)
-	//{
-	//	vec3 fragToLight = FragPos - pointLights[i].position; 
+	for(int i = 0; i < NR_POINT_LIGHTS; i++)
+	{
+		vec3 fragToLight = FragPos - pointLights[i].position; 
 
-	//	vec3 result = vec3(0);
-	//	result += CalcPointLight(pointLights[i], norm, FragPos, viewDir);
+		vec3 result = vec3(0);
+		result += CalcPointLight(pointLights[i], norm, FragPos, viewDir);
 
-		//float closestDepth = texture(shadowAtlases[i], fragToLight).r;
+		float closestDepth = texture(depthMaps[i], fragToLight).r;
 
-	//	float shadow = 1;//getCurrentDepth(fragToLight) - 0.00001 < closestDepth ? 1 : 0;
-	//	finalResult += max(0.0, shadow) * result;
-	//}
+		float shadow = getCurrentDepth(fragToLight) - 0.00001 < closestDepth ? 1 : 0;
+		finalResult += max(0.0, shadow) * result;
+	}
 
 
-	//FragColor = vec4(finalResult, 1);
+	FragColor = vec4(finalResult, 1);
 
 	//FragColor = vec4(shadow.xxx, 1);
 	//if(texture(texture_diffuse1, TexCoords).a < 0.5)
