@@ -91,6 +91,17 @@ float linearize(float dep)
 	return z;
 }
 
+float VectorToDepthValue(vec3 Vec)
+{
+    vec3 AbsVec = abs(Vec);
+    float LocalZcomp = max(AbsVec.x, max(AbsVec.y, AbsVec.z));
+
+    const float f = 2048.0;
+    const float n = 1.0;
+    float NormZComp = (f+n) / (f-n) - (2*f*n)/(f-n)/LocalZcomp;
+    return (NormZComp + 1.0) * 0.5;
+} 
+
 vec2 sampleCube(vec3 v)
 {
 	vec3 vAbs = abs(v);
@@ -164,9 +175,9 @@ void main()
 
 	vec2 screnUVS = (gl_FragCoord.xy - .5) / vec2(1366.0, 768.0);
 	float closestDepth = (texture(shadowAtlases, sampleCube(fragToLight)).x);
-	float currDepth = distance(FragPos, pointLights[0].position)/300.0;
+	float currDepth = VectorToDepthValue(fragToLight);
 	//float shadow = getCurrentDepth(fragToLight) - 0.00001 < closestDepth ? 1 : 0;
-	FragColor = vec4(vec3(currDepth < linearize(closestDepth)), 1);//vec4(vec3(uvs.x == 2), 1);
+	FragColor = vec4(vec3(currDepth), 1);//vec4(vec3(uvs.x == 2), 1);
 	
 	//for(int i = 0; i < NR_POINT_LIGHTS; i++)
 	//{
