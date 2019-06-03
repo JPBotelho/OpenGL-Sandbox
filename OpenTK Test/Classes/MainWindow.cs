@@ -83,8 +83,8 @@ namespace OpenTK_Test
 		protected override void OnLoad(EventArgs e)
 		{
 			startTime = DateTime.Now;
-			//VSync = VSyncMode.Off;
-			//skybox = new Skybox(skyboxFaces);
+			VSync = VSyncMode.Off;
+			skybox = new Skybox(skyboxFaces);
 			GL.Enable(EnableCap.DepthTest);
 			GL.Enable(EnableCap.CullFace);
 			CheckLastError();
@@ -122,14 +122,13 @@ namespace OpenTK_Test
 			{
 				pointLights[i].Set(shader, i);
 			}
-			//pointLight.Set(shader, 0);
 
 			model.Draw(shader);
 			CheckLastError();
 
-			//GL.DepthFunc(DepthFunction.Lequal);
-			//skybox.Draw(view, proj);
-			//GL.DepthFunc(DepthFunction.Less);
+			GL.DepthFunc(DepthFunction.Lequal);
+			skybox.Draw(view, proj);
+			GL.DepthFunc(DepthFunction.Less);
 			Context.SwapBuffers();
 			CheckLastError();
 			base.OnRenderFrame(e);
@@ -223,7 +222,7 @@ namespace OpenTK_Test
 			GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
 			shader.Dispose();
 			depthShader.Dispose();
-			//skybox.shader.Dispose();
+			skybox.shader.Dispose();
 			base.OnUnload(e);
 		}
 
@@ -271,7 +270,6 @@ namespace OpenTK_Test
 				GL.BindFramebuffer(FramebufferTarget.Framebuffer, shadowFBOs[i]);
 				GL.Clear(ClearBufferMask.DepthBufferBit);
 
-				float near_plane = 0.1f;
 				float far_plane = 300f;
 
 				Vector3 lightPos = pointLights[i].position;
