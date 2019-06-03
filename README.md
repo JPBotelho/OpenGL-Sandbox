@@ -43,11 +43,11 @@ You might want to hire someone else to write your engine, unless you don't like 
 Here's some screenshots:
 
 ## Skybox, its level of beautifulness is totally because of my programming skills and not the artist who made it
-![Bubble](Images/Skybox.png "Render.png")
+![Bubble](Images/skybox.png "Render.png")
 
 ## Model and texture loading from OBJ file using assimp
 
-![Bubble](Images/Sponza.PNG "Render.png")
+![Bubble](Images/Sponza.png "Render.png")
 
 ## Multiple point lights with shadows
 ![Bubble](Images/point.png "Render.png")
