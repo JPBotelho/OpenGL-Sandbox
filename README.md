@@ -1,6 +1,6 @@
 # OpenGL renderer made in C# with OpenTK
 
-First OpenGL project; struggled to learn C++ at the same time so sticked with C# and found OpenTK which allows you to do mostly everything C++ OpenGL does besides write a performant program (this is totally the framework's issue btw, this code was masterfully written, I swear).
+First OpenGL project; struggled to learn C++ at the same time so sticked with C# and found OpenTK which allows you to do mostly everything C++ OpenGL does besides write a performant program (in case it is written by me).
 
 This is a diffuse/specular renderer, no PBR.
 
