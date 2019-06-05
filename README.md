@@ -5,23 +5,23 @@ First OpenGL project; struggled to learn C++ at the same time so sticked with C#
 This is a diffuse/specular renderer, no PBR.
 
 # Features
-    Mouse and cursor input
-    Model loading using ASSIMP.Net
-    Texture loading 
-    Skybox
-    Programmable Shaders (1999 called, they want their brand new feature back)
-    Point, Spot and Directional light system
-    Omnidirectional shadow mapping (this is very crude and without PCF because yours truly was too lazy to get proper slope adjustment going)
-    Antialiasing (Implemented by framework)
-    VSync (Implemented by framework)
+* Mouse and cursor input
+* Model loading using ASSIMP.Net
+* Texture loading 
+* Skybox
+* Programmable Shaders (1999 called, they want their brand new feature back)
+* Point, Spot and Directional light system
+* Omnidirectional shadow mapping (this is very crude and without PCF because yours truly was too lazy to get proper slope adjustment going)
+* Antialiasing (Implemented by framework)
+* VSync (Implemented by framework)
 
 
 # Possible Feature Roadmap
-    PBR
-    Normal Mapping
-    Parallax Mapping
-    SSAO
-    SSR
+* PBR
+* Normal Mapping
+* Parallax Mapping
+* SSAO
+* SSR
 
 # Problems
 Hardcoded path on the model (you'll figure it out)
