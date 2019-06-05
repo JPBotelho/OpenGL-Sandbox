@@ -12,8 +12,8 @@ This is a diffuse/specular renderer, no PBR.
     Programmable Shaders (1999 called, they want their brand new feature back)
     Point, Spot and Directional light system
     Omnidirectional shadow mapping (this is very crude and without PCF because yours truly was too lazy to get proper slope adjustment going)
-    Antialiasing (I totally implemented it from scratch and it didn't come with the framework, cough cough)
-    VSync (same as above)
+    Antialiasing (Implemented by framework)
+    VSync (Implemented by framework)
 
 
 # Possible Feature Roadmap
